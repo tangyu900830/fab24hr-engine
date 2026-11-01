@@ -12,8 +12,10 @@ A browser 3D story game: one short shift in someone's job. The player walks arou
 - **If they write in Chinese, work in Traditional Chinese (繁體中文).** This is the default for Chinese, whether they type Traditional or Simplified characters. Use Simplified Chinese only when the person explicitly asks for it.
 - Working in Chinese means your replies, the game's text, the code comments you add and your commit messages are all in Traditional Chinese.
 - Before your first change in Chinese, run `npm run zh` once. It sets `"lang": "zh-Hant"` in `game/game.json`, so the engine's buttons and messages switch to Traditional Chinese, and if `game/` is still the untouched sample it replaces it with the Traditional Chinese sample (`samples/zh-Hant/`). If the game was already changed, only the interface language switches; translate the game's own text yourself.
+- **If they write in Korean, work in Korean (한국어).** Your replies, the game's text, the code comments you add and your commit messages are all in Korean. Write the game in natural Korean: 해요체 for interface messages, a short noun or `~하기` for buttons and the next-step line, never 당신.
+- Before your first change in Korean, run `npm run ko` once. It sets `"lang": "ko"` in `game/game.json`, so the engine's buttons and messages switch to Korean, and if `game/` is still the untouched sample it replaces it with the Korean sample (`samples/ko/`). If the game was already changed, only the interface language switches; translate the game's own text yourself.
 - `npm run en` switches back to English the same way. Only if explicitly asked for Simplified Chinese: `node tools/lang.js zh-Hans`, then convert the game's text to Simplified.
-- Build and test messages are printed in Chinese for Chinese projects and in English otherwise.
+- Build and test messages are printed in Chinese for Chinese projects and in English otherwise (Korean projects too; `npm run ko` and `npm run dev` speak Korean).
 
 ## Commands
 
@@ -23,6 +25,7 @@ npm run build      # build → public/index.html and out/test.html; fails with a
 npm run dev        # build + serve http://localhost:8080 + rebuild on save
 npm test           # build, then a headless playthrough on desktop and phone; must end with TEST OK
 npm run zh         # switch the project to Traditional Chinese (npm run en switches back)
+npm run ko         # switch the project to Korean (npm run en switches back)
 ```
 
 Always finish a change with `npm run build` and `npm test`. Both must pass.
@@ -42,7 +45,7 @@ Always finish a change with `npm run build` and `npm test`. Both must pass.
 ```
 
 - `key`: storage prefix in the browser (lowercase letters and digits). Change it for a new game, or saves from the old game are read.
-- `lang`: the interface language (`en` or `zh-Hant`; `zh-Hans` only on explicit request). Write your game's text in this language. Change it with `npm run zh` / `npm run en`, not by hand.
+- `lang`: the interface language (`en`, `zh-Hant` or `ko`; `zh-Hans` only on explicit request). Write your game's text in this language. Change it with `npm run zh` / `npm run ko` / `npm run en`, not by hand.
 - `src`: your files, in load order. Data first, then levels, then the story.
 
 ## Writing the game
@@ -126,6 +129,8 @@ termsSet(GLOSS, ' / ', [['shots', 'Shot']], []);
 
 Any glossary word in dialogue becomes tappable. Explain jargon in plain words: the audience knows nothing about the job.
 
+In Korean, a term is tappable when no Hangul syllable is glued to its front; particles and endings after it are fine (`에스프레소를`, `추출해서`). So write terms as their own word in dialogue (`그룹 헤드`, not `그룹헤드`), and give them at least two syllables where you can. Korean lines wrap only at spaces (the engine sets `word-break: keep-all` for `ko`), and sentences you join in code need a space between them, as in English.
+
 ### Home screen
 
 `HOME.title`, `HOME.sub`, `HOME.fine` (small print), `HOME.support = {url, label}` (your own support link for voluntary donations, optional). Keep the home screen minimal: title, optional name, one button.
@@ -157,7 +162,7 @@ The engine shows one small line on the home screen and on the ending screen with
 
 ## Testing
 
-`npm test` (`tools/test.js`) plays from the home screen to the ending card twice: desktop light (first choice) and phone dark (last choice). It presses whatever the screen shows: title cards, calls, dialogue, choices, "Take me there", and a mini-game's `#next` button. If a mini-game needs special input, add a case to `tools/test.js` (the grinder is the example). It prints `ended: true` for both runs, `ERRORS 0`, and `TEST OK`. If it says no browser was found, run `npx playwright-core install chromium` once and run `npm test` again. Screenshots go to `out/shot-*.png` — look at them. When you change the engine or a sample, also run `npm run test:samples` (plays the English and the Traditional Chinese sample).
+`npm test` (`tools/test.js`) plays from the home screen to the ending card twice: desktop light (first choice) and phone dark (last choice). It presses whatever the screen shows: title cards, calls, dialogue, choices, "Take me there", and a mini-game's `#next` button. If a mini-game needs special input, add a case to `tools/test.js` (the grinder is the example). It prints `ended: true` for both runs, `ERRORS 0`, and `TEST OK`. If it says no browser was found, run `npx playwright-core install chromium` once and run `npm test` again. Screenshots go to `out/shot-*.png` — look at them. When you change the engine or a sample, also run `npm run test:samples` (plays the English, the Traditional Chinese and the Korean sample).
 
 ## Publishing
 

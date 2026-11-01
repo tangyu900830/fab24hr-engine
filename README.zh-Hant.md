@@ -10,7 +10,7 @@
 
 <p align="center"><img src="docs/img/sample-desktop.zh-Hant.jpg" alt="範例遊戲的電腦畫面：方塊風的咖啡店、兩個掛著名牌的人、一個有兩個選項的對話框" width="64%"> <img src="docs/img/sample-phone.zh-Hant.jpg" alt="範例遊戲在手機暗色模式的結算：一張 9:16 的分享圖卡，有這一天的時間點與玩家做了什麼" width="26%"></p>
 
-> **現況：早期（0.2）。** 下面的範例遊戲可以從頭玩到尾；名字之後可能還會改。每一版有什麼、框架還沒有什麼：[`CHANGELOG.md`](CHANGELOG.md)（英文）。
+> **現況：早期（0.3）。** 下面的範例遊戲可以從頭玩到尾；名字之後可能還會改。每一版有什麼、框架還沒有什麼：[`CHANGELOG.md`](CHANGELOG.md)（英文）。
 
 ## 開始
 
@@ -22,13 +22,14 @@ npm run build      # → public/index.html（直接用瀏覽器開，或把 publ
 npm run dev        # 建置、在 http://localhost:8080 開起來，存檔就重建
 npm test           # 建置後用無頭瀏覽器把整個遊戲玩兩次（電腦＋手機）
 npm run zh         # 換成繁體中文（npm run en 換回英文）
+npm run ko         # 換成韓文
 ```
 
 `npm test` 要用一個 Chromium 系的瀏覽器。如果它說找不到瀏覽器，先跑一次 `npx playwright-core install chromium` 再試。
 
 **想用中文開發：**`npm run zh` 一次把畫面語言和範例遊戲換成繁體中文（範例變成「開店前半小時」），`npm run en` 換回英文。用中文跟 AI 寫程式工具說話，它會自己先切換成繁體中文，回覆、遊戲內容、註解都用繁體中文。
 
-裡面附一個範例遊戲 **Opening Shift**（中文版叫「開店前半小時」）：咖啡店開門前的半小時，大約 5 分鐘，用到框架的每一個部分。它的檔在 `game/`，英文與繁體中文的原版在 `samples/`。
+裡面附一個範例遊戲 **Opening Shift**（中文版叫「開店前半小時」）：咖啡店開門前的半小時，大約 5 分鐘，用到框架的每一個部分。它的檔在 `game/`，英文、繁體中文與韓文的原版在 `samples/`。
 
 ## 用 AI 寫程式工具做你自己的遊戲
 
@@ -58,3 +59,5 @@ npm run zh         # 換成繁體中文（npm run en 換回英文）
 不保證提供支援。歡迎回報問題與送修改，但回覆可能很慢。聯絡：mcl@mclty.com。
 
 由人與 AI 協作寫成。
+
+[English](README.md) · [한국어](README.ko.md)

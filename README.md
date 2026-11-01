@@ -10,7 +10,7 @@ It is free for noncommercial use. If it saves you time, you can [buy the author 
 
 <p align="center"><img src="docs/img/sample-desktop.en.jpg" alt="The sample game on a desktop: a blocky café, two people with name tags, and a dialogue box with two choices" width="64%"> <img src="docs/img/sample-phone.en.jpg" alt="The sample game's ending on a phone in dark mode: a 9:16 share card with the times of the day and what the player did" width="26%"></p>
 
-> **Status: early (0.2).** The sample game below works end to end. Names may still change. What is in each version, and what is not in the engine yet: [`CHANGELOG.md`](CHANGELOG.md).
+> **Status: early (0.3).** The sample game below works end to end. Names may still change. What is in each version, and what is not in the engine yet: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Quick start
 
@@ -25,7 +25,7 @@ npm test           # play the whole game twice in a headless browser (desktop + 
 
 `npm test` needs a Chromium-based browser. If it says none was found, run `npx playwright-core install chromium` once and try again.
 
-Prefer Chinese? `npm run zh` switches the interface and the sample game to Traditional Chinese, and `npm run en` switches back. AI coding tools do this on their own when you write to them in Chinese.
+Prefer Chinese? `npm run zh` switches the interface and the sample game to Traditional Chinese, and `npm run en` switches back. Prefer Korean? `npm run ko` does the same in Korean. AI coding tools do this on their own when you write to them in Chinese or Korean.
 
 The repository ships with a sample game, **Opening Shift**: half an hour before a small café opens. It is about five minutes long and uses every part of the engine. Its files are in `game/`.
 
@@ -87,4 +87,4 @@ There is no support guarantee. Issues and pull requests are welcome, but answers
 
 Written by a person working together with AI.
 
-[中文說明](README.zh-Hant.md)
+[中文說明](README.zh-Hant.md) · [한국어](README.ko.md)
