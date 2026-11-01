@@ -1,6 +1,6 @@
 {
   "name": "fab24hr-engine",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "A small framework for browser 3D story games: walk around, talk to people, tap jargon for a plain explanation, take phone calls, finish with an ending card.",
   "license": "SEE LICENSE IN LICENSE",
@@ -11,7 +11,8 @@
     "test": "node tools/build.js && node tools/test.js",
     "zh": "node tools/lang.js zh-Hant",
     "en": "node tools/lang.js en",
-    "test:samples": "node tools/build.js samples/en && node tools/test.js && node tools/build.js samples/zh-Hant && node tools/test.js && node tools/build.js"
+    "ko": "node tools/lang.js ko",
+    "test:samples": "node tools/build.js samples/en && node tools/test.js && node tools/build.js samples/zh-Hant && node tools/test.js && node tools/build.js samples/ko && node tools/test.js && node tools/build.js"
   },
   "devDependencies": {
     "acorn": "8.15.0",

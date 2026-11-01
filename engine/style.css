@@ -33,6 +33,12 @@
 /* 整個畫面固定住：網頁本身不能被雙指放大、不能被拖著捲動（縮放只作用在 3D 鏡頭上）。要捲的地方各自捲 */
 html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:pan-x pan-y}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* 韓文（game.json 的 lang 是 ko）：字型先用韓文的。詞與詞之間有空白，只在空白斷行、不在一個詞的中間斷（keep-all）；一個詞一行都放不下才在詞中間斷（break-word），不會撐出框。
+   字型用 :where() 不加權重：遊戲在自己的 game.css 用 :root 改字型，照樣蓋得過去 */
+:root:where(:lang(ko)){--font-display:system-ui,-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;--font-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif}
+:lang(ko){word-break:keep-all;overflow-wrap:break-word}
+/* 韓文的小標籤不拉字距：字距拉開就分不出哪裡是一個詞（「다 음 할 일」） */
+:lang(ko) .g-k,:lang(ko) .board legend{letter-spacing:.02em}
 input,textarea{-webkit-user-select:text;user-select:text}
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}

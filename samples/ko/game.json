@@ -1,0 +1,12 @@
+{
+  "key": "cafe",
+  "title": "오픈 준비",
+  "description": "작은 카페가 문을 열기 전 30분: 커피 머신을 켜고, 그라인더를 맞추고, 문을 열어요. fab24hr 엔진으로 만든 5분짜리 예제 게임이에요.",
+  "lang": "ko",
+  "src": [
+    "data.js",
+    "cafe.js",
+    "story.js"
+  ],
+  "css": "game.css"
+}

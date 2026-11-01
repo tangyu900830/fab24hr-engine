@@ -10,7 +10,8 @@
      DLG.pick(pk, i)  玩家選了第 i 個選項（統計用）
    名詞：termsSet(gloss, sep, alias, skip)
      gloss [[名詞, 白話解釋, 常見], …]：名詞裡可以用 sep 隔開幾個同義的寫法；第三格是真的，整局只標前兩次。
-     alias [[別的寫法, 指到的名詞], …]；skip：剛好含著名詞、但不是那個意思的詞（整段跳過，不然點下去的解釋是另一件事）。 */
+     alias [[別的寫法, 指到的名詞], …]；skip：剛好含著名詞、但不是那個意思的詞（整段跳過，不然點下去的解釋是另一件事）。
+     比對：英文的詞前後不能黏著字母；韓文的詞前面不能黏著韓文字（後面可以接助詞）；中文照字比。 */
 const DLG={who:()=>'',present:()=>false,line:()=>{},end:()=>{},pick:null};
 const TERM={L:[],re:null,G:[],sep:'\n'};
 function termsSet(gloss,sep,alias,skip){
@@ -29,6 +30,7 @@ function termify(text){
     if(TERM.G[e[1]][2]&&(termN[e[1]]|0)>=2)return m;
     if(m.length<=2&&m!==e[0])return m;   // 兩個字母以內的詞（MO、PM、Up）大小寫要完全一樣，不然英文裡每個 up 都會變成可點的行話
     if(/^[A-Za-z]/.test(m)&&(/[A-Za-z]/.test(str[off-1]||'')||/[A-Za-z-]/.test(str[off+m.length]||'')))return m;
+    if(/^[가-힣]/.test(m)&&/[가-힣]/.test(str[off-1]||''))return m;   // 韓文的詞前面不能黏著別的韓文字：주차장 裡的 차장 不算；後面照常接助詞（에스프레소를、추출해서），所以字尾不擋
     used[e[1]]=1;n++;termN[e[1]]=(termN[e[1]]|0)+1;return '<button class="term" type="button" data-t="'+e[1]+'">'+m+'</button>';
   });
 }

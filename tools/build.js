@@ -4,7 +4,7 @@
    讀 <遊戲>/game.json：
      key    存在瀏覽器的鍵名前綴（每個遊戲不一樣，例如 "cafe"）
      title  網頁標題；description 搜尋與分享的說明
-     lang   畫面語言："en"、"zh-Hant"（繁體中文）、"zh-Hans"（簡體中文）。遊戲的字就用這個語言寫
+     lang   畫面語言："en"、"zh-Hant"（繁體中文）、"zh-Hans"（簡體中文）、"ko"（韓文）。遊戲的字就用這個語言寫
      src    遊戲自己的檔，照順序接在框架後面（資料、關卡、故事…）
      css    遊戲自己的樣式（可以不給），接在框架的樣式後面
    產生：
@@ -25,7 +25,7 @@ try { cfg = JSON.parse(rd(path.join(GDIR, 'game.json'))) } catch (e) { die('cann
 ZH = /^zh/.test(cfg.lang || '');
 for (const k of ['key', 'title', 'lang', 'src']) if (!cfg[k]) die('game.json is missing "' + k + '"', 'game.json 少了 ' + k);
 if (!/^[a-z][a-z0-9]{1,15}$/.test(cfg.key)) die('game.json "key" must be 2–16 lowercase letters or digits, starting with a letter', 'game.json 的 key 只能是小寫英文字母與數字（2–16 個字，字母開頭）');
-const LANGS_OK = { en: 'English', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文' };
+const LANGS_OK = { en: 'English', 'zh-Hant': '繁體中文', 'zh-Hans': '简体中文', ko: '한국어' };
 if (!LANGS_OK[cfg.lang]) die('game.json "lang" must be one of: ' + Object.keys(LANGS_OK).join(', '), 'game.json 的 lang 只能是 ' + Object.keys(LANGS_OK).join('、'));
 fs.mkdirSync(OUT, { recursive: true }); fs.mkdirSync(PUB, { recursive: true });
 
