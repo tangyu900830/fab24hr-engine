@@ -1,87 +1,91 @@
-/* 開店前半小時：一件一件做。
+/* PM 的一天：第一幕「接手的爛攤子」。
    STORY.segs  一天裡的幾個時刻（字卡上的名字、副標、開始的時間＝午夜起算的分鐘、光線）
-   STORY.beats 一次一件事：去找誰或去哪裡（to）、「下一步」那一行（guide）、講什麼（lines）、
-               小遊戲（mini）、小遊戲之後講什麼（post）、世界怎麼變（after）。
-   ST.d 記玩家選了什麼；結算照它寫。 */
+   STORY.beats 一次一件事：去找誰（to）、「下一步」那一行（guide）、講什麼（lines）、
+               選擇（mini）、選擇之後講什麼（post）、世界怎麼變（after）。
+   ST.d 記玩家選了什麼、四個數值、餅乾；結算照它寫。
+   後面的幾幕（型錄風暴、報價鋼索、向副總報告）之後再接在這幕後面。 */
+
+/* 四個數值，起始值。沒有被改過的就用這個。 */
+const PMBASE = {trust: 50, cust: 50, profit: 50, energy: 70};
+function pmStat(k) {return ST.d[k] == null ? PMBASE[k] : ST.d[k]}
+function pmBump(k, v) {ST.d[k] = Math.max(0, Math.min(100, pmStat(k) + v))}
+
 STORY.segs = {
-  open: {name: '開店前', sub: '七點開門，你還有半小時。', t: 390, mood: 'eve',
-    scene() {W.show('sam', false); W.screen('machine', ['ESPRESSO', '關機'], '#93a9b2')}},
-  dial: {name: '調磨豆機', sub: '每天的第一杯濃縮，都不會剛好。', t: 405, mood: 'day',
-    scene() {W.screen('machine', ['ESPRESSO', '可以用了'], '#7fe3c8')}},
-  first: {name: '開門', sub: '門外已經有人在等了。', t: 420, mood: 'day',
-    scene() {W.put('sam', 'door'); W.show('sam', true)}}
+  open: {name: '接手的爛攤子', sub: '週二早上，你接手這條產品線的第二個禮拜。', t: 520, mood: 'day',
+    scene() {W.show('sales', ST.q >= 1)}}
 };
 
 STORY.beats = [
-  {seg: 'open', to: 'mia', guide: '跟吧台後面的米亞說早安',
-    lines: () => [['mia', '早！今天你站吧台。第一件事：把咖啡機打開。'],
-      ['mia', '它要熱一陣子。等到七點才開，第一批客人就得跟我們一起等。'],
-      ['me', '好，我去。']]},
-  {seg: 'open', to: 'machine', guide: '打開咖啡機',
-    lines: () => [['sys', '你按下開關。鍋爐開始嗡嗡響，壓力表慢慢往上爬。'],
-      ['sys', '沖煮頭也要夠熱，不然一開始的濃縮會偏酸。']],
-    after() {if (W) W.screen('machine', ['ESPRESSO', '預熱中…'], '#ffc94a')}},
-  {seg: 'open', ring: ['鮮奶配送', '來電', ANSWER],
-    lines: () => [['drv', '你好，我是送鮮奶的。壞消息：塞車，大概會晚四十分鐘。'],
-      ['drv', '開店第一個小時，鮮奶會不夠。抱歉！']],
+  {seg: 'open', to: 'lan', guide: '跟隔壁的小嵐打招呼',
+    lines: () => [['sys', '週二早上八點四十。你接手這條工業電腦產品線的第二個禮拜，桌上還留著上一任 PM 的便利貼。'],
+      ['lan', '早！第二週了，還活著嗎？'],
+      ['me', '還活著。便利貼比我的待辦清單還多。'],
+      ['lan', '抽屜裡有餅乾。要是今天有人大聲說話，記得來找我。'],
+      ['lan', '……我說「要是」啦。']],
+    after() {if (W) W.show('sales', true)}},
+  {seg: 'open', to: 'boss', guide: '去經理的座位，看看發生什麼事',
+    ring: ['業務 阿凱', '「客戶那邊出事了！你快來經理這裡！」', '過去看看'],
+    lines: () => [['sys', '你還沒走到，就聽見業務阿凱的聲音。半層樓都聽得見。'],
+      ['sales', '經理，客戶收到貨了！配套的工業平板，沒辦法插我們附的 DC 圓頭線！'],
+      ['sales', '他們現場只有 Type-C 的電源可以用，整批貨卡在客戶倉庫，沒辦法上線！'],
+      ['sales', '規格表到底有沒有人檢查過？'],
+      ['boss', '先冷靜。這是上一個專案留下來的問題。'],
+      ['boss', '你接手了，這件事由你處理。']],
     mini(done) {
-      say([['mia', '一開店就缺鮮奶。你想怎麼辦？']], null, {choice: [
-        ['跑去巷口的便利商店買幾瓶', () => {ST.d.milk = 'shop'; done()}],
-        ['先用冰箱裡現有的撐一下', () => {ST.d.milk = 'fridge'; done()}]]});
+      say([['boss', '說吧，你打算怎麼辦？']], null, {choice: [
+        ['全數回收，換成正確的線', () => {
+          ST.d.cable = 'return'; pmBump('trust', 10); pmBump('cust', -5); pmBump('profit', -15); pmBump('energy', -10);
+          toast('信任 ↑　客戶 ↓　利潤 ↓↓', '回收是最乾淨的做法，也最貴。'); done()}],
+        ['先附 Type-C 轉接頭出貨，之後補線', () => {
+          ST.d.cable = 'adapter'; pmBump('trust', -5); pmBump('cust', -10); pmBump('profit', -5); pmBump('energy', -5);
+          toast('信任 ↓　客戶 ↓↓　利潤 ↓', '最快，但留下一個之後要還的債。'); done()}],
+        ['先逐一問客戶的機型，分批處理', () => {
+          ST.d.cable = 'split'; pmBump('trust', 5); pmBump('cust', 5); pmBump('profit', -8); pmBump('energy', -20);
+          toast('信任 ↑　客戶 ↑　精力 ↓↓', '最準，但要花最多力氣。'); done()}]]});
     },
-    post: () => ST.d.milk === 'shop'
-      ? [['sys', '你跑去巷口又跑回來，抱著四瓶鮮奶，有點喘。'], ['mia', '很好，撐到配送的車來應該夠。']]
-      : [['mia', '好。鮮奶留給熟客，其他人就推黑咖啡。']]},
-  {seg: 'dial', to: 'grinder', guide: '調磨豆機',
-    lines: () => [['mia', '機器熱了。接下來調磨豆機：萃取一份，看計時器。'],
-      ['mia', '大部分咖啡師會抓 25 到 30 秒左右。太快通常會酸，太慢會苦。']],
-    mini: miniShot},
-  {seg: 'dial', to: 'mia', guide: '請米亞試喝你的濃縮',
-    lines: () => ST.d.ok
-      ? [['mia', `${ST.d.time} 秒。我試試看……嗯，甜，帶一點果酸。就是這杯。`], ['mia', `磨豆機就停在 ${ST.d.grind}。`]]
-      : [['mia', '還是太快。我幫你轉一下……好了。咖啡豆每天都不一樣，每天早上做，就會越來越有感覺。'], ['mia', '今天先停在 5。']]},
-  {seg: 'first', to: 'door', guide: '打開前門',
-    lines: () => [['sys', '你把牌子翻到「營業中」。冷空氣跟著阿山一起進來。'],
-      ['sam', '早！我又是第一個嗎？']],
-    after() {if (W) W.walk('sam', 'till')}},
-  {seg: 'first', to: 'sam', guide: '在櫃台幫阿山點餐',
-    lines: () => [['sam', '老樣子，一杯小白咖啡。']].concat(ST.d.milk === 'fridge'
-      ? [['me', '今天鮮奶有點少，不過熟客的份一定有。'], ['sam', '那我就當作是稱讚了。']]
-      : [['me', '馬上來。']])},
-  {seg: 'first', end: true, t: 422,
-    lines: () => [['sys', '七點零二分，第一杯送出去。今天開始了。']]}
+    post: () => ST.d.cable === 'return'
+      ? [['me', '全數回收，換成正確的線。重新驗證要三個禮拜，這段時間我會跟客戶保持聯繫。'],
+        ['sales', '三個禮拜？！客戶會瘋掉！'],
+        ['boss', '做對比做快重要。客戶那邊我來說明，你把時程排出來給我。'],
+        ['sys', '阿凱臉很臭，但沒再多說什麼。你的桌上多了一份要排的時程表。']]
+      : ST.d.cable === 'adapter'
+        ? [['me', '先附 Type-C 轉接頭，讓客戶今天就能上線。正式的線我再補寄。'],
+          ['sales', '這個可以！客戶今天就能用！'],
+          ['boss', '可以，但轉接頭是權宜之計。我要看到補線的日期。'],
+          ['sys', '阿凱鬆了一口氣。你心裡卻有點不踏實：客戶看到那顆轉接頭，會怎麼想？']]
+        : [['me', '不是每個客戶都用同一種平板。我先逐一問機型，需要的才換。'],
+          ['boss', '好，那就辛苦你。中午前給我名單。'],
+          ['sales', '我幫你問幾個比較熟的客戶。'],
+          ['sys', '你花了一整個上午打電話。有幾個客戶其實用得上 DC 圓頭線，不用換。但你的喉嚨也乾了。']],
+    after() {if (W) W.walk('sales', 'aisle')}},
+  {seg: 'open', to: 'lan', guide: '回座位，小嵐在對你招手',
+    lines: () => (ST.d.cable === 'return'
+      ? [['sys', '你回到座位，整個人癱在椅子上。'], ['lan', '我聽說了。回收這個決定不好做，但你扛下來了。']]
+      : ST.d.cable === 'adapter'
+        ? [['sys', '你回到座位，整個人癱在椅子上。'], ['lan', '我聽到阿凱的聲音了……你還好嗎？'], ['lan', '這個決定很實際，至少客戶今天能用。']]
+        : [['sys', '你回到座位，整個人癱在椅子上。'], ['lan', '你一個上午都在講電話？喝水了嗎？'], ['lan', '不管有沒有，先吃餅乾。']])
+      .concat([['lan', '來，餅乾。'], ['sys', '你咬了一口。奶油的，有點碎，剛剛好。'], ['me', '……謝謝。']]),
+    after() {
+      pmBump('energy', 15); ST.d.cookies = (ST.d.cookies || 0) + 1;
+      toast('餅乾 +1', '精力回復了一點');
+    }},
+  {seg: 'open', end: true, t: 600,
+    lines: () => [['sys', '才十點。下午還有型錄會議，客戶還在等報價，傍晚還要向副總報告。']]}
 ];
 
-/* 小遊戲：選研磨度、萃取一份、看時間。1 最細（慢），9 最粗（快）。 */
-function miniShot(done) {
-  let g = 8, shots = 0, last = null;
-  const timeOf = s => Math.round(46 - s * 3.4 + (Math.random() * 2 - 1));   // 遊戲用的簡化模型：磨得越細，萃取越慢
-  const draw = () => {
-    const verdict = last == null ? '' : last < 25 ? '太快：水水的，偏酸。' : last > 30 ? '太慢：很重，偏苦。' : '在範圍裡，試喝看看。';
-    setPanel('<p>研磨度：<b class="mono">' + g + '</b>（1 最細，9 最粗）</p>'
-      + '<div class="row"><button class="btn" id="finer" type="button">磨細一點</button><button class="btn" id="coarser" type="button">磨粗一點</button><button class="btn btn-primary" id="pull" type="button">萃取一份</button></div>'
-      + (last == null ? '<p class="fine">目標是 25–30 秒。</p>' : `<p>第 ${shots} 份：<b class="mono">${last} 秒</b>。${verdict}</p>`)
-      + (last != null && (last >= 25 && last <= 30 || shots >= 5) ? nextBtn('完成') : ''), '調磨豆機');
-    $('#finer').onclick = () => {g = Math.max(1, g - 1); draw()};
-    $('#coarser').onclick = () => {g = Math.min(9, g + 1); draw()};
-    $('#pull').onclick = () => {shots++; last = timeOf(g); SFX.blip(); draw()};
-    if ($('#next')) $('#next').onclick = () => {ST.d.shots = shots; ST.d.grind = g; ST.d.time = last; ST.d.ok = last >= 25 && last <= 30; hidePanel(); done()};
-  };
-  draw();
-}
-
-/* 結算卡：照實際發生的事寫 */
+/* 結算卡：照實際發生的事寫。這是第一幕的版本，後面幾幕接上之後再重寫。 */
 STORY.ending = () => ({
-  title: '開門了',
-  tl: ['open', 'dial', 'first'].map(k => [clockOf(STORY.segs[k].t), STORY.segs[k].name]),
-  sub: ST.d.ok ? '第一杯濃縮是你自己調出來的。' : '這次是米亞幫你調好磨豆機。',
-  stats: [['萃取了幾份', ST.d.shots || 0], ['研磨度', ST.d.ok ? ST.d.grind : 5], ['鮮奶', ST.d.milk === 'shop' ? '巷口買的' : '只用冰箱裡的']],
-  lines: [ST.d.milk === 'shop' ? '配送的車七點二十分到了。沒有人發現它遲到。' : '有兩位客人改點黑咖啡，其中一位說他比較喜歡這樣。',
-    '明天咖啡豆又老了一天，你還是要再調一次。']
+  title: ST.d.cable === 'return' ? '你選擇把事情做對' : ST.d.cable === 'adapter' ? '你選擇先讓客戶動起來' : '你選擇先搞清楚再動手',
+  tl: [[clockOf(STORY.segs.open.t), STORY.segs.open.name]],
+  sub: '第一幕結束。後面還有三幕。',
+  stats: [['團隊信任', pmStat('trust')], ['客戶滿意', pmStat('cust')], ['利潤', pmStat('profit')], ['精力', pmStat('energy')], ['餅乾', ST.d.cookies || 0]],
+  lines: [ST.d.cable === 'return'
+      ? '全數回收：線材對了，但交期多了三個禮拜，利潤也吃了一大塊。經理看在眼裡。'
+      : ST.d.cable === 'adapter'
+        ? '轉接頭讓客戶今天就能上線。但「補線」這個承諾，之後一定會有人來問。'
+        : '你一通一通電話問出來，有些客戶其實不用換。事情處理得準，只是一個上午就這樣沒了。',
+    '小嵐的餅乾還是有用的。']
 });
 
 /* 跟不是下一步要找的人說話 */
-STORY.talk = id => {
-  if (id === 'mia' && ST.seg === 'open' && ST.q === 1) {busy = true; showGuide(); say([['mia', '先開機器。開關在右邊。']], () => {busy = false; showGuide()}, {end: '好'}); return true}
-  return false;
-};
+STORY.talk = id => false;

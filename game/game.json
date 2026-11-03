@@ -1,11 +1,11 @@
 {
-  "key": "cafe",
-  "title": "開店前半小時",
-  "description": "一間小咖啡店開門前的三十分鐘：開咖啡機、調磨豆機、開門迎接第一位客人。fab24hr 框架的 5 分鐘範例遊戲。",
+  "key": "pmday",
+  "title": "PM 的一天",
+  "description": "在虛構的棲光科技，接手一條工業電腦產品線的第二個禮拜：線材搞錯、客戶抱怨、主管看著你。用 fab24hr 框架做的 PM 日常模擬遊戲。",
   "lang": "zh-Hant",
   "src": [
     "data.js",
-    "cafe.js",
+    "office.js",
     "story.js"
   ],
   "css": "game.css"

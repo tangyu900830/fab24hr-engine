@@ -1,44 +1,43 @@
-/* 開店前半小時：人物、名詞、地方、主頁。
-   全部都是虛構的。改掉任何一樣，就是你自己的遊戲。 */
+/* PM 的一天：人物、名詞、地方、主頁。
+   全部都是虛構的：棲光科技、裡面的人、產品與事件，都與任何真實公司無關。 */
 
 /* 主頁 */
-HOME.title = '開店前半小時';
-HOME.sub = '一間小咖啡店開門前的三十分鐘';
-HOME.fine = 'fab24hr 框架的範例遊戲。咖啡店與裡面的人都是虛構的。';
+HOME.title = 'PM 的一天';
+HOME.sub = '在棲光科技接手一條工業電腦產品線的第二個禮拜';
+HOME.fine = '棲光科技與裡面的人、產品、事件都是虛構的，與任何真實公司無關。';
 /* 你自己的贊助連結（主頁與結算卡會顯示），例如：
-   HOME.support = {url: 'https://buymeacoffee.com/你的名字', label: '☕ 請我喝杯咖啡'}; */
+   HOME.support = {url: 'https://buymeacoffee.com/你的名字', label: '☕ 喜歡的話，請我喝杯咖啡'};
+   遊戲內容不能因為有沒有贊助而不同。 */
 HOME.support = null;
 
 /* 遊戲裡的人。
    STORY.cast：對話框與圖鑑裡的樣子（about 是圖鑑的介紹）。
-   WORLD.cast：3D 場景裡的身體（只有真的在場的人；送鮮奶的只會打電話）。 */
+   WORLD.cast：3D 場景裡的身體（只有真的在場的人）。 */
 STORY.cast = {
-  me: {name: '你', role: '咖啡師，上班第一週', tag: '你', color: '#c98a00'},
-  mia: {name: '米亞', role: '領班', tag: '領班', color: '#a8327a', about: '負責早班。這間店的門她開過不知道幾次了，每天還是會親口試第一杯濃縮。'},
-  sam: {name: '阿山', role: '熟客', tag: '熟客', color: '#2b6bd6', about: '幾乎每天早上第一個進門，點的永遠是同一杯。'},
-  drv: {name: '鮮奶配送', role: '電話', tag: '電話', color: '#55616b', about: '每天早上送鮮奶來，通常比你還早到。'}
+  me: {name: '你', role: '產品經理（PM），剛接手新產品線', tag: '你', color: '#c98a00'},
+  boss: {name: '周經理', role: '你的主管', tag: '主管', color: '#2b6bd6', about: '講話不快，但每個決定他都會問一句「為什麼」。'},
+  sales: {name: '阿凱', role: '業務', tag: '業務', color: '#d6502b', about: '離客戶最近，所以最先聽到壞消息，也最先大聲說出來。'},
+  lan: {name: '小嵐', role: '同事', tag: '同事', color: '#2f9a6a', about: '坐在你隔壁。抽屜裡永遠有餅乾，而且好像剛好知道你什麼時候需要。'}
 };
 WORLD.cast = {
-  me: {label: '你・咖啡師', fill: '#f2b01e', ink: '#231800', cloth: 0x3b3b3b, color: 0xc98a00, hair: 0x2b2320, node: 'start', face: Math.PI},
-  mia: {label: '米亞・領班', fill: '#a8327a', ink: '#ffffff', cloth: 0x5b4636, color: 0xa8327a, hair: 0x6b3a22, long: true, node: 'bar', face: 0},
-  sam: {label: '阿山・熟客', fill: '#2b6bd6', ink: '#ffffff', cloth: 0x2f5f9f, color: 0x2b6bd6, hair: 0x1c1c1c, node: 'outside', face: -Math.PI / 2, hidden: true}
+  me: {label: '你・PM', fill: '#f2b01e', ink: '#231800', cloth: 0x3b4a5a, color: 0xc98a00, hair: 0x2b2320, node: 'start', face: Math.PI},
+  boss: {label: '周經理・主管', fill: '#2b6bd6', ink: '#ffffff', cloth: 0x2f4f7f, color: 0x2b6bd6, hair: 0x1c1c1c, node: 'boss', face: -Math.PI / 2},
+  sales: {label: '阿凱・業務', fill: '#d6502b', ink: '#ffffff', cloth: 0x8a3b2a, color: 0xd6502b, hair: 0x3a2a1c, node: 'sales', face: Math.PI / 2, hidden: true},
+  lan: {label: '小嵐・同事', fill: '#2f9a6a', ink: '#ffffff', cloth: 0x3f7f64, color: 0x2f9a6a, hair: 0x4a2b1b, long: true, node: 'lan', face: 0}
 };
 
-/* 走過去用的地方（不是人）。at：站在哪裡才算到了；mark：「！」浮在哪裡。 */
-STORY.places = {
-  machine: {name: '咖啡機', at: [-3, -4.1], mark: [-3, 2.4, -5.4], go: '走去咖啡機'},
-  grinder: {name: '磨豆機', at: [-5.2, -4.1], mark: [-5.2, 2.2, -5.4], go: '走去磨豆機'},
-  door: {name: '前門', at: [6.2, 3], mark: [7.7, 3.1, 3], go: '走去前門'}
-};
+/* 走過去用的地方（不是人）。這一幕只找人，所以先空著。 */
+STORY.places = {};
 
 /* 玩家可以點的詞，點了跳出白話解釋。[詞, 解釋]。同一個意思的幾種寫法用「 / 」隔開。 */
 const GLOSS = [
-  ['濃縮咖啡 / 濃縮', '用高壓把熱水擠過磨得很細的咖啡粉，煮出一小杯很濃的咖啡。咖啡店大部分的飲料都從它開始。'],
-  ['調磨豆機 / 調磨', '每天早上調整磨豆機，讓濃縮咖啡的味道剛好。咖啡豆每天都在變，所以咖啡師每天都要調。'],
-  ['研磨度', '咖啡粉磨得多細。越細，水流得越慢；越粗，水一下就沖過去。'],
-  ['萃取', '水從咖啡粉裡帶出多少味道。太少會酸，太多會苦。'],
-  ['沖煮頭', '咖啡機上裝咖啡粉把手的地方，熱水從這裡流出來。'],
-  ['小白咖啡', '濃縮咖啡加上一層薄薄的蒸氣奶泡。比拿鐵小杯，味道比較濃。'],
-  ['熟客', '常常來、店員都知道他要點什麼的客人。']
+  ['PM / 產品經理', '產品經理。負責決定做什麼產品、怎麼賣，並且在研發、業務、客戶之間協調，讓事情真的做出來。'],
+  ['工業電腦', '專門放在工廠、機房這類嚴苛環境，要長時間不間斷運作的電腦。不像辦公室電腦，壞了就換一台。'],
+  ['工業平板', '給工廠、倉庫這類現場用的平板電腦，比一般平板更耐用、更耐操。'],
+  ['DC 圓頭線 / DC 圓頭 / DC plug', '一種傳統的圓形小插頭電源線，很多電子設備用它供電。'],
+  ['Type-C', '一種扁扁的、正反都能插的插頭。現在很多手機、筆電、平板都用它來充電。'],
+  ['轉接頭', '把一種插頭轉成另一種插頭的小配件。'],
+  ['規格表', '把產品的尺寸、接頭、供電方式這些細節寫清楚的一張表。出貨前要靠它確認有沒有搞錯。'],
+  ['業務', '負責跟客戶談生意、接訂單的同事。他們最了解客戶要什麼，也最常第一個接到客戶的抱怨。']
 ];
 termsSet(GLOSS, ' / ', [], []);
