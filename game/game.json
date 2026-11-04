@@ -7,7 +7,8 @@
     "data.js",
     "office.js",
     "story.js",
-    "story2.js"
+    "story2.js",
+    "story3.js"
   ],
   "css": "game.css"
 }

@@ -102,6 +102,8 @@ async function browser() {
     { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/第一章/, /轉接頭出貨/, /書面確認/] },
     { id: 'c1cold', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第一章/] },
     { id: 'c2good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Joy', pick: [/第二章/] },
+    { id: 'c3good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Eve', pick: [/第三章/] },
+    { id: 'c3bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第三章/] },
     { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第二章/] }
   ];
   const rest = []; for (const o of extra) rest.push(await play(br, o));
