@@ -6,7 +6,7 @@
 levelAdd('office', function (K) {
   const {flat, lam, basic, M, label, screen, G} = K, TX = K.TX;
   const B = (w, h, d, m, x, y, z, sh) => K.box(w, h, d, m, x, y, z, G, sh);
-  K.bounds(-16, 16, -10, 8);
+  K.bounds(-16, 28.5, -10, 8);
 
   /* 材質：亮暗主題由 onTheme 換色 */
   const carpet = lam(0xaeb6bb, {map: TX.carpet}), carpetMt = lam(0x8f9ba4, {map: TX.carpet}),
@@ -32,7 +32,8 @@ levelAdd('office', function (K) {
   /* 外牆：後牆是落地玻璃，右牆是實牆，左牆留一個大門 */
   B(32.6, .9, .3, M.wall, 0, .45, -10.15); B(32.6, 2.3, .1, M.glass, 0, 2.05, -10.15, false); B(32.6, .2, .3, M.wall, 0, 3.3, -10.15);
   for (let x = -16; x <= 16; x += 3.2) B(.1, 2.3, .14, alu, x, 2.05, -10.1);
-  B(.3, 3.2, 18.4, M.wall, 16.15, 1.6, -1);
+  B(.3, 3.2, 10.9, M.wall, 16.15, 1.6, -4.55); B(.3, 3.2, 5.3, M.wall, 16.15, 1.6, 5.35); B(.3, .9, 1.9, M.wall, 16.15, 2.75, 1.75);
+  B(.1, .1, 1.9, alu, 16.15, 2.3, 1.75);
   B(.3, 3.2, 13.5, M.wall, -16.15, 1.6, -3.25); B(.3, 3.2, 2.5, M.wall, -16.15, 1.6, 6.75); B(.3, .9, 2, M.wall, -16.15, 2.75, 4.5);
   B(.06, 2.3, .9, M.glass, -16.05, 1.15, 4.05, false); B(.1, .1, 2.1, alu, -16.05, 2.3, 4.5);
 
@@ -113,8 +114,55 @@ levelAdd('office', function (K) {
   B(.8, 1.8, .6, M.dark, 4.0, .9, 7.1); K.tower('bench', G, 4.0, 1.85, 7.1);
   label('電腦 Team 測試台', .5, 5.7, 4.0, G);
 
+  /* 樣品架：辦公室裡的開放式層架，放樣品機、線材樣品和包材 */
+  const board = lam(0xe9e6df), box1 = lam(0xc9a46a), box2 = lam(0xb48a52), boxW = lam(0xf1f1ee), tray = lam(0x34444f);
+  function sampleShelf(x, z, w) {
+    B(w, .06, .45, alu, x, .06, z); B(.05, 1.9, .45, alu, x - w / 2, .95, z); B(.05, 1.9, .45, alu, x + w / 2, .95, z); B(w, 1.9, .03, steel, x, .95, z - .21);
+    [.5, 1.0, 1.5, 1.95].forEach((y, i) => {
+      B(w, .04, .45, board, x, y, z);
+      if (i < 3) for (let k = 0; k < Math.floor(w / .62); k++) {
+        const bx = x - w / 2 + .4 + k * .62, t = (i + k) % 3;
+        if (t === 0) {B(.45, .03, .32, tray, bx, y + .04, z); B(.4, .02, .28, glow, bx, y + .06, z)}
+        else if (t === 1) {B(.38, .3, .3, box1, bx, y + .17, z); B(.3, .03, .2, boxW, bx, y + .33, z)}
+        else {B(.3, .2, .28, boxW, bx, y + .12, z); B(.3, .16, .26, box2, bx, y + .3, z)}
+      }
+    });
+  }
+  sampleShelf(7.0, 7.45, 3.2); sampleShelf(-4.3, 7.45, 1.9);
+  label('樣品架', 7.0, 6.6, 1.6, G); label('樣品架', -4.3, 6.6, 1.4, G);
+
+  /* 倉庫：右側外面一棟，從走廊盡頭的門進去。水泥地、橘色層架、紙箱、棧板、打包桌 */
+  const conc = lam(0xaeb2b4, {map: TX.floor}), pal = lam(0xb88b55, {map: TX.wood}), rackO = lam(0xe7892f), rackB = lam(0x30639c), yel = basic(0xf2c230);
+  K.onTheme(dk => conc.color.setHex(dk ? 0x4a4e50 : 0xaeb2b4));
+  flat(12.4, 18.4, conc, 22.35, .01, -1, 1, G);
+  flat(.7, 1.9, lam(0xd9b630), 16.6, .02, 1.75, 1, G);
+  B(12.4, 3.2, .3, M.wall, 22.35, 1.6, -10.15); B(.3, 3.2, 18.4, M.wall, 28.55, 1.6, -1);
+  for (let x = 17.5; x < 28; x += 2.4) B(.5, 1.4, .06, M.glass, x, 2.45, -9.98, false);
+  function rack(x, z, w, d, alongX) {
+    const tiers = [.25, 1.15, 2.05], dx = alongX ? w : d, dz = alongX ? d : w;
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(c => B(.08, 2.7, .08, rackB, x + c[0] * dx / 2, 1.35, z + c[1] * dz / 2));
+    if (alongX) [0, 1, 2].forEach(i => {B(w, .07, .07, rackO, x, tiers[i] + .35, z - d / 2); B(w, .07, .07, rackO, x, tiers[i] + .35, z + d / 2)});
+    else [0, 1, 2].forEach(i => {B(.07, .07, w, rackO, x - d / 2, tiers[i] + .35, z); B(.07, .07, w, rackO, x + d / 2, tiers[i] + .35, z)});
+    tiers.forEach((y, i) => {
+      B(dx, .05, dz, lam(0xd8d2c6), x, y + .35, z);
+      const n = Math.floor(w / .9);
+      for (let k = 0; k < n; k++) {
+        const o = -w / 2 + .5 + k * .9, m = (i + k) % 2 ? box1 : box2, bx = alongX ? x + o : x, bz = alongX ? z : z + o;
+        B(alongX ? .7 : .8, .5, alongX ? .8 : .7, m, bx, y + .63, bz); if ((i + k) % 3 === 0) B(alongX ? .6 : .7, .35, alongX ? .7 : .6, m === box1 ? box2 : box1, bx, y + 1.05, bz);
+      }
+    });
+  }
+  rack(19.2, -9.1, 3.6, 1.1, true); rack(23.2, -9.1, 3.6, 1.1, true); rack(27.0, -9.1, 3.0, 1.1, true);
+  rack(27.7, -4.8, 4.2, 1.1, false); rack(27.7, .2, 4.2, 1.1, false); rack(27.7, 5.0, 3.6, 1.1, false);
+  [[21.8, -3.6], [24.0, -3.4]].forEach(p => {B(1.2, .14, 1.2, pal, p[0], .1, p[1]); B(1.0, .5, 1.0, box1, p[0], .45, p[1]); B(1.0, .5, 1.0, box2, p[0], .95, p[1]); B(.7, .4, .7, box1, p[0] + .05, 1.4, p[1])});
+  B(1.2, .14, 1.2, pal, 22.6, .1, 1.0); B(1.0, .6, 1.0, box2, 22.6, .5, 1.0);
+  B(2.6, .08, 1.1, oak, 20.0, .9, 4.6); B(.08, .9, .9, alu, 18.9, .45, 4.6); B(.08, .9, .9, alu, 21.1, .45, 4.6);
+  B(.5, .3, .4, box1, 19.5, 1.07, 4.6); B(.4, .08, .4, yel, 20.4, .98, 4.7); B(.55, .05, .4, boxW, 20.9, .97, 4.5);
+  screen('stock', G, 17.6, 1.9, -9.95, 2.2, 1.2, ['WH-1 倉庫', '庫存盤點'], '#ffc94a');
+  label('倉庫', 21.8, .1, 3.4, G);
+
   /* 植物 */
-  [[-15.2, 7.2, 1.3], [-6.2, 1.0, 1.1], [8.9, -8.8, 1.0], [10.2, 7.2, 1.2], [-4.4, 7.0, 1.0], [15.4, 1.8, 1.0], [15.4, -5.2, 1.0]].forEach(p => {
+  [[-15.2, 7.2, 1.3], [-6.2, 1.0, 1.1], [8.9, -8.8, 1.0], [10.2, 7.2, 1.2], [15.4, 1.8, 1.0], [15.4, -5.2, 1.0]].forEach(p => {
     B(.4 * p[2], .35 * p[2], .4 * p[2], potM, p[0], .18 * p[2], p[1]); B(.55 * p[2], .8 * p[2], .55 * p[2], M.green, p[0], .35 * p[2] + .4 * p[2], p[1]);
   });
 
@@ -130,7 +178,10 @@ levelAdd('office', function (K) {
     [10.7, 15.9, -10, -9.1], [12, 14.6, -7.2, -6.0], [10.8, 11.4, -8.5, -7.9],
     [11, 16, 2.9, 3.1], [10.9, 11.1, 3, 4.6], [10.9, 11.1, 5.8, 8], [11, 16, 7.9, 8.1], [12.3, 15.2, 3, 4.6], [15.3, 15.9, 5, 7.6],
     [-15.1, -14.1, -1.7, 2.1], [-10.2, -6.8, 6.7, 7.9], [-14.5, -11.5, 6.7, 7.9], [-9.3, -7.7, 5.4, 6.4],
-    [-2.7, 4.2, 6.6, 7.6]);
+    [-2.7, 4.2, 6.6, 7.6], [5.3, 8.7, 7.1, 7.9], [-5.3, -3.3, 7.1, 7.9],
+    [16.0, 16.3, -10, .8], [16.0, 16.3, 2.7, 8],
+    [17.2, 21.0, -9.8, -8.4], [21.2, 25.0, -9.8, -8.4], [25.4, 28.5, -9.8, -8.4], [27.0, 28.5, -7.0, 7.0],
+    [21.1, 22.5, -4.3, -2.9], [23.3, 24.7, -4.1, -2.7], [22.0, 23.2, .3, 1.7], [18.6, 21.4, 4.0, 5.2]);
   K.block(blk);
 
   /* 人站的點，以及點和點之間怎麼走 */
@@ -141,15 +192,17 @@ levelAdd('office', function (K) {
     a1l: [-4.9, -4.8], a1m: [1.0, -4.8], a1r: [6.4, -4.8], a1c: [9.6, -4.8],
     kpdoor: [9.6, -2.1], kaiW: [9.6, -3.5], kpd: [11.5, -2.1], kp: [14.0, -2.2], pantry: [12.7, -5.2], wcd: [10.6, 5.2], wc: [12.3, 5.2],
     mine: [-2.9, -1.85], maggie: [-.8, -1.85], ethan: [5.5, -6.35], kaiD: [-2.9, 2.65], grace: [.5, 5.9],
+    c1: [9.6, 1.7], cor: [12.6, 1.7], whd: [16.2, 1.7], wh1: [19.0, 1.7], whs: [23.8, -1.0], whk: [22.4, 3.2],
     mt0: [-8.6, -3.4], mt1: [-11.8, -4.0], mt2: [-6.9, -4.2], mt3: [-10.2, -3.4], mtw: [-14.9, -6.2]
   },'door-start start-lobby lobby-fl fl-fm fm-fr fr-fc fc-a2c a2c-a1c a2c-kpdoor kpdoor-kaiW kaiW-a1c kpdoor-kpd kpd-kp fl-a2l a2l-a2m a2m-a2r a2r-a2c a2l-a1l a1l-a1m a1m-a1r a1r-a1c a1c-pantry '
-    + 'lobby-meetdoor meetdoor-a2l meetdoor-mt0 mt0-mt3 mt3-mt1 mt0-mt2 mt1-mtw fc-wcd wcd-wc fm-grace mine-a2l maggie-a2m ethan-a1r kaiD-fl');
+    + 'fc-c1 c1-a2c c1-cor cor-whd whd-wh1 wh1-whs wh1-whk lobby-meetdoor meetdoor-a2l meetdoor-mt0 mt0-mt3 mt3-mt1 mt0-mt2 mt1-mtw fc-wcd wcd-wc fm-grace mine-a2l maggie-a2m ethan-a1r kaiD-fl');
 
   /* 可以點的地方：自己的座位、會議室的長桌（id 跟 STORY.places 一樣） */
   K.pickBox('desk', 1.9, 1.6, 1.2, XS[0], .8, ROWS[1] - .2, G);
+  K.pickBox('warehouse', 4, 1.6, 3, 21.8, .8, -1.0, G);
   K.pickBox('meeting', 7, 1.4, 2, -10.75, .7, -6.2, G);
 
   /* 主頁背景的鏡頭 */
-  WORLD.shots = [{p: [0, 1.2, -1], d: 24, yaw: .35, pitch: .62}, {p: [-10, 1, 1], d: 18, yaw: -.3, pitch: .7}, {p: [12, 1, -4], d: 17, yaw: .2, pitch: .7}];
+  WORLD.shots = [{p: [0, 1.2, -1], d: 24, yaw: .35, pitch: .62}, {p: [-10, 1, 1], d: 18, yaw: -.3, pitch: .7}, {p: [12, 1, -4], d: 17, yaw: .2, pitch: .7}, {p: [22, 1, -2], d: 19, yaw: -.2, pitch: .7}];
 });
 WORLD.level = 'office';
