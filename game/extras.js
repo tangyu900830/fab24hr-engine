@@ -14,7 +14,7 @@ function pmxVisit(id, fn) {
 }
 const pmxFree = () => {busy = false; showGuide(); if (W && STORY.segs[ST.seg]) STORY.segs[ST.seg].scene()};
 
-/* ───────── 茶水間：Rita 固定在咖啡機旁，同事一個一個來喝咖啡，這時候可以聊天 ───────── */
+/* ───────── 茶水間：同事一個一個來喝咖啡，這時候可以聊天 ───────── */
 /* 八卦 x：不適合說這一則的人（當事人）。有的是吵架，有的是戀愛，有的只是小事 */
 const PMX_GOSSIP = [
   {t: '財務的 Mia 跟採購的 Jay 在偷偷談戀愛，連午餐都故意錯開時間去。結果昨天有人在停車場，看到他們分同一杯珍奶。', x: ['mia', 'jay']},
@@ -22,7 +22,7 @@ const PMX_GOSSIP = [
   {t: '你知道 Ella 最近都提早下班嗎？聽說她在偷偷準備考證照，但是不想讓主管知道。', x: ['ella']},
   {t: 'Sam 每天最早到，不是因為認真。是因為他在公司後面的巷子口，每天餵同一隻流浪貓。', x: ['sam']},
   {t: 'Kai 跟 Lena 上次為了展覽預算，在會議室差點吵起來，最後是 Walter 出面打的圓場。', x: []},
-  {t: '產線的 Ray 跟行政的 Rita 最近常常一起吃午餐。大家都假裝沒看到，但已經有人在賭他們什麼時候公開。', x: ['ray', 'rita']},
+  {t: '產線的 Ray 最近常常藉口「巡線」跑去品保那邊。大家都猜他是為了 Ella，但他自己死不承認。', x: ['ella']},
   {t: 'Maggie 的餅乾是她自己週末烤的。她從來沒說過，但鐵盒裡的食譜小卡，被人看到過。', x: []},
   {t: 'Walter 總裁表面不太管事，其實誰的報告準不準時，他都記得。', x: []},
   {t: '聽說 Maggie 最近被別的公司挖角了，不知道是真是假。', x: []}];
@@ -32,6 +32,37 @@ const PMX_TIPS = {
   2: ['型錄開工之前，先確認規格是不是 Ethan 的最新版。數字錯一個，客戶就會拿去用。', '開會要留紀錄，決議寫下來。不然下一次，大家都記得不一樣的版本。'],
   3: ['新品的 EVT，目的是找問題，不是證明沒問題。問題多不可怕，可怕的是沒人列清單。', '新品上市前，要想清楚是賣給誰。換個產業，同一台機器可能就有人要。'],
   4: ['客戶都會殺價。Cora 的預算大概在六百美金上下，她的採購喜歡拿數量換折扣，別直接降價。', '毛利不能太低，不然 KP 也會問你。底線先算好，再去談。']};
+/* 每個時刻的提示（接下來該做什麼）和消息（跟現在的劇情有關的新鮮事）。key 是場景 id */
+const PMX_SEG = {
+  open: ['先去找 KP 之前，想好「問題是什麼、你打算怎麼做」。他最不喜歡只丟問題的人。', '聽說 Kai 昨晚被 SI 的 Victor 罵到凌晨兩點，今天火氣很大。'],
+  adp1: ['轉接頭只是暫時的。口頭同意不算數，一定要請 SI 寫下書面同意。', 'Victor 那邊的採購最近換人了，新的很愛翻舊帳。'],
+  adp2: ['客戶已經不接受轉接頭了。接下來要拿出正式的處理方案，別再拖。', '聽說 Victor 已經問過法務，賠償的事可能不是小事。'],
+  adp3: ['Walter 看的是事實和下一步。先講發生什麼事，再講你要怎麼做。', 'Walter 今天特地取消了午餐行程，大家都知道事情不小。'],
+  spl1: ['客戶的機型要一個一個問，Mr. Huang 最好講話，先從他開始。', 'Mr. Huang 現場今天剛好有人在，電話應該打得通。'],
+  ret1: ['規格以實機為準。去找 Grace 把實機接上電表逐項量，不要只聽業務轉述。', 'Grace 那邊的樣品機這週剛好沒有人借。'],
+  ret2: ['線材廠報價出來，要拿給 KP 批准。MOQ 可以跟 Amy 談，不要硬碰硬。', 'Amy 說她們廠這個月產能有空，交期可能壓得下來。'],
+  ret3: ['線做好了，出貨前一定要用樣品機實測，不要只看標籤和長度。', '聽說最近線材廠有一批線被品保退貨，大家都在小心。'],
+  redo1: ['被退回就是規格寫錯。這次每一項都跟 Grace 一起量，不要再跳步驟。', '聽說 KP 這次真的火了，連 Maggie 都不敢隨便說話。'],
+  redo2: ['重做的線拿給 Grace 測，這次不能省。', 'Amy 說她們這次特別加了一道檢查。'],
+  ret4: ['寄件方式要看客戶急不急：空運貴但快，一般出貨便宜但要等。先問 Kai 客戶能等多久。', 'Kai 說 Victor 已經天天催了。'],
+  ret5: ['收尾前，把這次的教訓寫成報告：規格怎麼確認、怎麼測、怎麼留紀錄。', '聽說 Walter 想把這次的處理方式，變成公司的標準流程。'],
+  c2a: ['型錄要先弄清楚範圍：KP 要什麼、幾頁、給誰看。把決議寫下來。', '聽說 Kai 這次丟單，是因為型錄上有一個舊數字。'],
+  c2b: ['啟動會議要留會議紀錄。決議寫下來，下次大家才不會各說各話。', 'Lena 最近又有新的方向，Zoe 已經改了三版。'],
+  c2c: ['規格要找 Ethan 確認最新版，不要拿舊資料。', 'Ethan 這週在改一個 ECN，有些規格可能剛剛變了。'],
+  c2d: ['第二次會議，有人會想加頁。拿出上次的紀錄，要加頁就要決定拿掉什麼。', 'Hank 說他有兩個客戶想要零售版的型錄。'],
+  c2e: ['要渲染圖，先給 Ian 一頁 brief。最好約 Lena 和 Ian 三個人一起對。', 'Ian 手上同時有三個部門的案子，排程很滿。'],
+  c2f: ['付印前，每個數字都再跟 Ethan 的最新規格對一次。', '印刷廠說，晚一天送件，就要多等三天。'],
+  c2g: ['型錄交出去了。收尾時，把這次哪裡卡住寫下來，下次就能更快。', 'Kai 說有幾個客戶已經在問新型錄了。'],
+  c3a: ['EVT 是找問題，不是證明沒問題。問題列清單、分輕重，PVT 前必修的先修。包材先跟 Leo 談，再去工廠做落摔。', '聽說副總很看重 QX-7。競爭對手也快推出類似的無風扇機種，市場預期今年這個品類會成長一成以上。'],
+  c3b: ['PVT 的老化測試是把早夭的機器先挑出來，不要急著縮短。', '產線的 Ray 說，這批試產的產線比預期順。'],
+  c3d: ['上市了卻沒訂單，先別急著砸錢。去問 Kai 和 Hank，客戶到底卡在哪。', '聽說 Hank 的零售客戶，最近在找沒有風扇的機器。'],
+  c3e: ['同一台機器可以換個產業賣。跨產業的商機，記得算成本與毛利。', '聽說智慧交通那邊最近有標案，要找耐震、耐熱的工控機。'],
+  c3f: ['Nora 只看數字和下一步。先講累計的事實，再講計畫，不要只報好消息。', '聽說 Nora 副總這季的目標，被董事會盯得很緊。'],
+  c4a: ['業務轉述的需求不一定完整。有疑問就直接跟客戶 Cora 確認，不要靠轉述。', '聽說 Cora 他們公司今年要擴產，預算比去年多。'],
+  c4b: ['問供應商要問清楚客製的成本、NRE 和交期。Owen 會先喊高價，別直接接受。', 'Owen 說他們機殼廠這個月開模排程有空，可以壓一點價。'],
+  c4c: ['報價要用目標毛利率反推：售價 = 成本 ÷（1 − 毛利率）。先定底線再報。', '聽說 Mia 說，這季毛利率太低的案子，要多簽一關。'],
+  c4d: ['Cora 會殺價。別直接降價，拿數量或付款條件換折扣，毛利率要守住底線。', 'Cora 的採購說，她們也在比別家的報價。'],
+  c4e: ['向 KP 報告時，先講毛利率和風險。毛利太低，不要等被問才講。', 'KP 今天心情看起來還可以。']};
 const PMX_IAN = '我要的是一頁 Brief：要什麼、給誰看、幾張、什麼時候要。三句話就夠，不要丟一堆檔案給我。';
 const PMX_VIS = ['mia', 'ian', 'jay', 'sam', 'ella', 'hank', 'zoe'];   /* 輪流來喝咖啡的人 */
 const PMX_STORY = {ian: 1, hank: 1, zoe: 1};   /* 這幾個人是故事裡的人：只在他們不在場景裡的時候才會來喝咖啡 */
@@ -42,16 +73,16 @@ function pmxPantry() {
   return pmxVisit('pantry', () => {
     busy = true; showGuide();
     const v = pmxPantryOpen() ? pmxKV.id : null, nm = v ? STORY.cast[v].name : '';
-    const ch = [['請 Rita 倒一杯免費咖啡', () => pmxCoffee()], ['拿一片餅乾', () => pmxCookie()]];
+    const ch = [['倒一杯免費咖啡', () => pmxCoffee()], ['拿一片餅乾', () => pmxCookie()]];
     if (v) ch.push(['和 ' + nm + ' 聊聊（八卦指數 ' + (ST.d.gos || 0) + '）', () => pmxChat(v)]);
     ch.push(['走開', pmxFree]);
-    say([['sys', '茶水間的咖啡機旁貼著「免費」。Rita 站在咖啡機後面，一杯一杯在倒。吧台上有一盤手工餅乾。' + (v ? nm + ' 端著杯子站在旁邊，看起來不太趕時間。' : '現在沒有人停下來聊天。')]], null, {choice: ch});
+    say([['sys', '茶水間的咖啡機旁貼著「免費」。吧台上有一盤手工餅乾。' + (v ? nm + ' 端著杯子站在旁邊，看起來不太趕時間。' : '現在沒有人停下來聊天。')]], null, {choice: ch});
   });
 }
 function pmxCoffee() {
-  if (ST.d.cof === ST.seg) {say([['rita', '你剛喝過一杯了喔。再喝下去，今晚會睡不著。']], pmxFree); return}
+  if (ST.d.cof === ST.seg) {say([['sys', '你剛喝過一杯了。再喝下去，今晚會睡不著。']], pmxFree); return}
   ST.d.cof = ST.seg; pmBump('energy', 8); toast('免費咖啡', '精力回復了一點');
-  say([['rita', '來，剛煮好的。今天看起來有點累？'], ['sys', '咖啡機轟轟響了一陣，一杯熱咖啡遞到你手上。香味出來的時候，肩膀鬆了一點。']], pmxFree);
+  say([['sys', '咖啡機轟轟響了一陣，一杯熱咖啡掉進杯子裡。香味出來的時候，肩膀鬆了一點。']], pmxFree);
 }
 function pmxCookie() {
   if (ST.d.cok === ST.seg) {say([['sys', '盤子裡的餅乾，已經被你拿過一片了。']], pmxFree); return}
@@ -65,15 +96,15 @@ function pmxChat(who) {
   ST.d.gos = nn;
   let L;
   if (kind === 'tip') {
-    const T = PMX_TIPS[ST.d.chapter] || PMX_TIPS[1], ti = ST.d.ti || 0; ST.d.ti = ti + 1;
+    const T = PMX_TIPS[ST.d.chapter] || PMX_TIPS[1], ti = ST.d.ti || 0, SG = PMX_SEG[ST.seg]; ST.d.ti = ti + 1;
     L = who === 'ian' ? [['ian', '你是 PM 吧？欸，我順便跟你說一件事。'], ['ian', PMX_IAN]]
-      : [[who, '欸，我跟你說一件有用的。'], [who, T[ti % T.length]]];
+      : [[who, '欸，我跟你說一件有用的。'], [who, SG ? SG[0] : T[ti % T.length]]];
     L.push(['sys', '你把這句話記了下來。和同事交流，總是會有一些收穫。']);
   } else if (kind === 'sour') {
     L = [[who, '（笑了一下）你怎麼什麼都想問？'], ['sys', '你發現旁邊的人換了話題，聲音也壓低了。你好像打聽太多了。']];
   } else {
-    const ok = PMX_GOSSIP.filter(g => g.x.indexOf(who) < 0), gi = ST.d.gi || 0; ST.d.gi = gi + 1;
-    L = [[who, '你也來倒咖啡？我跟你說一件事，不要說是我說的。'], [who, ok[gi % ok.length].t]];
+    const ok = PMX_GOSSIP.filter(g => g.x.indexOf(who) < 0), gi = ST.d.gi || 0, SG = PMX_SEG[ST.seg]; ST.d.gi = gi + 1;
+    L = [[who, '你也來倒咖啡？我跟你說一件事，不要說是我說的。'], [who, SG && gi % 2 === 0 ? SG[1] : ok[gi % ok.length].t]];
   }
   say(L, () => {
     if (kind === 'sour') pm({trust: -3}, '同事覺得你太八卦。');
@@ -131,7 +162,7 @@ function pmxMdesk() {
 
 /* 把這三個地方接進走動的介面：靠近就出現按鈕、點了才走過去 */
 const pmxTalk0 = STORY.talk;
-const PMX_KIT = {rita: 1, mia: 1, jay: 1, ella: 1, sam: 1};
+const PMX_KIT = {mia: 1, jay: 1, ella: 1, sam: 1};
 const PMX_MOVER = {ben: 1, joe: 1, sue: 1, max: 1, dan: 1};
 const PMX_AMB = {
   ben: ['（抱著一箱零件）借過借過，這箱要趕在下午送進線上！'], joe: ['（抱著箱子，沒有停）等一下，這箱成品要送去倉庫。'],
@@ -189,6 +220,18 @@ STORY.beats.forEach(b => {
   }
 });
 STORY.beats.filter(b => b.end).forEach(b => {const w = b.when; b.when = () => !pmxFired() && !pmxLeave() && (!w || w())});
+
+/* 故事越解越多，團隊越來越信任你：每走完一個時刻（換到下一個場景），團隊信任 +2（第一個場景不算） */
+Object.keys(STORY.segs).forEach(k => {
+  const G = STORY.segs[k];
+  if (k === 'menu' || !G.scene) return;
+  const f = G.scene;
+  G.scene = function () {
+    const L = ST.d.sgs = ST.d.sgs || [];
+    if (L.indexOf(k) < 0) {L.push(k); if (L.length > 1) pmBump('trust', 2)}
+    return f.apply(this, arguments);
+  };
+});
 
 STORY.segs.hr = {name: '人資面談', sub: '大會議室 A。KP 旁邊，坐著人資 Tina。', get t() {return ST.clock + 40}, mood: 'day', scene() {pmCast({kp: 'mt2', tina: 'mt1'})}};
 STORY.segs.mgb = {name: 'Maggie 的最後一天', sub: '下班前。', get t() {return ST.clock + 40}, mood: 'eve', scene() {pmCast({})}};
@@ -265,7 +308,7 @@ function pmxFiredEnding() {
     title: '資遣通知', led: '被資遣', sub: '人資 Tina 把文件推到你面前。',
     more: R.slice(-3),
     tl: [['Day 1', '接手'], ['Day ' + Math.max(1, weeks * 7), '資遣面談']],
-    stats: [['團隊信任', pmStat('trust') + '/100'], ['在公司（週）', String(weeks)], ['餅乾', String(cookies)]],
+    stats: [['團隊信任', pmShow('trust')], ['在公司（週）', String(weeks)], ['餅乾', String(cookies)]],
     lines: ['這次被資遣的原因：'].concat(R.map(x => '・' + x)).concat([
       d.fireResp === 'learn' ? '面談的時候，你問了 KP 哪些地方可以學。這是你當天做得最好的一件事。' : d.fireResp === 'beg' ? '你請求再給一次機會。KP 說，機會不是沒給過。' : '你當場說「這不公平」，Tina 靜靜等你說完。',
       'Maggie 說過：被罵不代表你做錯，被資遣也不代表你這個人不行。下一份工作，你會帶著這次的教訓。',

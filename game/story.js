@@ -15,6 +15,10 @@ const PMNAME = {trust: '信任', cust: '客戶', profit: '利潤', energy: '精�
 const PMNAME3 = {trust: '信任', cust: '市場', profit: '成本', energy: '精力'};
 const PMNAME4 = {trust: '信任', cust: '客戶', profit: '毛利', energy: '精力'};
 const PMNAME2 = {trust: '信任', cust: '業務滿意', profit: '成本', energy: '精力'};
+/* 每章每個數值「最好的選法最高能到幾分」。由 tools/maxes.js 算出來（改了選項的分數要重算）。體力每個時刻都能喝咖啡補，所以是 100 */
+const PMMAX = {1: {trust: 100, cust: 76, profit: 41, energy: 100}, 2: {trust: 100, cust: 54, profit: 53, energy: 100},
+  3: {trust: 92, cust: 75, profit: 62, energy: 100}, 4: {trust: 79, cust: 65, profit: 63, energy: 100}};
+const pmShow = k => pmStat(k) + '/' + Math.max(pmStat(k), (PMMAX[ST.d.chapter] || {})[k] || 100);
 const pmStat = k => ST.d[k] == null ? PMBASE[k] : ST.d[k];
 function pmBump(k, v) {ST.d[k] = Math.max(0, Math.min(100, pmStat(k) + v))}
 const pmMark = v => v >= 8 ? '↑↑' : v > 0 ? '↑' : v <= -8 ? '↓↓' : v < 0 ? '↓' : '';
@@ -38,7 +42,7 @@ const pmDay = (h, m, plus) => ((ST.d.day || 0) + (plus || 0)) * 1440 + h * 60 + 
 /* 把人擺回預設的位置；o 裡有寫的就照 o（null 是不在場） */
 function pmCast(o) {
   if (!W) return;
-  const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null, leo: null};
+  const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'hk', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null, leo: null};
   Object.assign(base, o);
   Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
 }
@@ -137,12 +141,12 @@ STORY.beats = [
     post: () => ST.d.cold
       ? [['maggie', '（頓了一下）……好。你自己處理。'], ['sys', 'Maggie 低頭回到螢幕前，沒有再看你一眼。']]
       : [['maggie', '好。有需要隨時叫我。']],
-    after() {pmCast({kai: 'kaiW'})}},
+    after() {pmCast({kai: 'kpd'})}},
   {seg: 'open', to: 'kp', guide: '去 KP 的辦公室門口，看看發生什麼事',
     ring: ['Kai（業務）', '「KP 那邊你現在馬上過去！客戶那邊出事了！」', '過去看看'],
     lines: () => {
-      if (W) W.show('kai', true);
-      return [['sys', '你還沒走到 KP 的辦公室，就聽見 Kai 的聲音。半層樓都聽得見。'],
+      if (W) {W.put('kai', 'kpd'); W.show('kai', true)}
+      return [['sys', '你走進 KP 的辦公室。Kai 已經站在裡面，聲音大到半層樓都聽得見。'],
         ['kai', 'KP！我賣給 SI 的那批工業平板，SI 送到終端客戶現場才發現——線材根本不相容！'],
         ['kai', '我們隨貨附的是 DC 圓頭線！客戶的設備只吃 Type-C 供電！整批貨卡在現場，一台都開不了機！'],
         ['kp', '（皺眉）Kai，你小聲一點。'],
@@ -154,8 +158,8 @@ STORY.beats = [
         ['kai', '（轉向你）還有你！你不是接手了嗎？到底有沒有看過規格表？！'],
         ['me', '我……還在看。'],
         ['kai', '還在看？！客戶現場等不了你「還在看」！'],
-        ['kp', '（重重嘆了一口氣）Kai，出去。我跟他講。'],
-        ['sys', 'Kai 退後半步，但沒有走，雙手抱胸，狠狠瞪著你。'],
+        ['kp', '（重重嘆了一口氣）Kai，你冷靜一點，坐下來。你也要聽，我們三個一起把事情講清楚。'],
+        ['sys', 'Kai 退後半步，雙手抱胸，站在 KP 的桌子旁邊，狠狠瞪著你。'],
         ['kp', '這是前一個 PM 留下來的案子，現在你是窗口。'],
         ['kp', '我已經被問了一整個早上。我不想一直被問同一件事。你說，要怎麼處理？']];
     },
@@ -611,7 +615,7 @@ STORY.ending = () => {
     title, led: '線材風波', sub: '第一章結束。從出事到收尾，花了 ' + weeks + ' 個禮拜。',
     more: [pmWho(), '規格：' + spec, '驗證：' + test],
     tl: [['Day 1', '客戶現場出事'], ['Day ' + ((d.rday || 0) + 1), '決定換線'], ['Day ' + (day + 1), '客戶回饋']],
-    stats: [['團隊信任', pmStat('trust') + '/100'], ['客戶滿意', pmStat('cust') + '/100'], ['利潤', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['耗時（週）', String(weeks)]],
+    stats: [['團隊信任', pmShow('trust')], ['客戶滿意', pmShow('cust')], ['利潤', pmShow('profit')], ['精力', pmShow('energy')], ['餅乾', String(cookies)], ['耗時（週）', String(weeks)]],
     lines,
     share: '《PM 的一天》第一章「' + title + '」：' + weeks + ' 週、' + cookies + ' 片餅乾。'
   };

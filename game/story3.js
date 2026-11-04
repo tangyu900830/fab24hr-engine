@@ -5,7 +5,7 @@
    deals（談成案例 [[名稱, 台數, 單價], …]）、extra（額外支出，美元）、trust／cust／profit／energy、owed／cookies、day。
    公司、人名、產品名都是虛構的。 */
 
-const pm3Cast = o => pmCast(Object.assign({hank: 'hk', kai: 'kaiD'}, o));
+const pm3Cast = o => pmCast(Object.assign({hank: 'hkD', kai: 'kaiD'}, o));
 const pm3Ch = b => {const w = b.when; b.when = () => ST.d.chapter === 3 && (!w || w()); return b};
 const qx7M = n => (n < 0 ? '-' : '') + 'USD ' + Math.abs(Math.round(n)).toLocaleString('en-US');
 const QX7_TOOL = {alu: 80000, mid: 60000, old: 20000};
@@ -31,7 +31,7 @@ function qx7Score() {
   d.score = sc; d.result = sc >= 7 ? 'up' : sc >= 4 ? 'one' : 'cut';
 }
 
-STORY.segs.c3a = {name: '新產品：QX-7', sub: '一台無風扇的邊緣運算工控機。你第一個從零開始的案子。', t: 540, mood: 'day', scene() {pm3Cast({leo: 'whk'})},
+STORY.segs.c3a = {name: '新產品：QX-7', sub: '一台無風扇的邊緣運算工控機。你第一個從零開始的案子。', t: 540, mood: 'day', scene() {pm3Cast({leo: 'leoD'})},
   note: 'EVT 的目的是找問題，不是證明沒問題。'};
 STORY.segs.c3b = {name: '試產 PVT', sub: '工廠試跑一百台。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm3Cast({})},
   note: '試產的目的，是在量產之前，把流程裡的洞找出來。'};
@@ -65,8 +65,8 @@ STORY.beats.push.apply(STORY.beats, [
     post: () => ST.d.evt === 'list'
       ? [['ethan', '清單、分級、期限。這樣我才知道先做哪個。修完這幾個，我們進 DVT，再進 PVT。']]
       : [['ethan', '（皺眉）過熱降速和接頭鬆，量產只會更明顯。']]},
-  {seg: 'c3a', to: 'leo', guide: '找包材 RD Leo，討論包裝與落摔測試',
-    lines: () => [['sys', 'Leo 的桌上堆著各種紙箱、泡棉和護角樣品，牆邊擺著一台落摔測試機。'],
+  {seg: 'c3a', to: 'leo', guide: '找包材 RD Leo，討論怎麼包',
+    lines: () => [['sys', 'Leo 的座位在 Ethan 旁邊。他桌上堆著各種紙箱、泡棉和護角樣品。'],
       ['leo', '整箱從 80 公分摔六個面、十二次，機器不能壞。QX-7 是整塊鋁，將近四公斤，包材要先決定再測。'],
       ['leo', '你想怎麼包？我把每一種的成本和風險講給你聽。']],
     mini(done) {
@@ -75,11 +75,18 @@ STORY.beats.push.apply(STORY.beats, [
         ['紙漿模塑加護角：中等成本，要多測一輪', () => {ST.d.pack = 'pulp'; pm({profit: 2, energy: -5}); done()}],
         ['最薄的瓦楞紙箱：最便宜，先過再說', () => {ST.d.pack = 'cheap'; pm({profit: 5, energy: 3}); done()}]]});
     },
-    post: () => ST.d.pack === 'foam'
-      ? [['leo', '通過，很穩。只是很占空間，運費會高。']]
-      : ST.d.pack === 'pulp'
-        ? [['leo', '第一輪護角太薄，角被摔裂。加厚兩毫米，第二輪通過。']]
-        : [['leo', '箱子被摔穿，機殼凹進去。不通過。你得改成紙漿加護角，又測兩輪。最便宜的，通常不是最省的。']],
+    post: () => [['leo', '好，樣品我來準備。落摔機在工廠，我們到那邊做。']],
+    after() {if (W) {W.walk('leo', 'fac1'); W.show('leo', true)}}},
+  {seg: 'c3a', to: 'factory', guide: '到工廠，和 Leo 一起做落摔測試',
+    lines: () => {
+      if (W) {W.put('leo', 'fac1'); W.show('leo', true)}
+      return [['sys', '工廠的出貨區旁，落摔測試機已經架好了。Leo 把包好的 QX-7 放上去，離地 80 公分。'],
+        ['leo', '準備好了嗎？一面一面摔。']].concat(ST.d.pack === 'foam'
+        ? [['leo', '通過，很穩。只是很占空間，運費會高。']]
+        : ST.d.pack === 'pulp'
+          ? [['leo', '第一輪護角太薄，角被摔裂。加厚兩毫米，第二輪通過。']]
+          : [['leo', '箱子被摔穿，機殼凹進去。不通過。你得改成紙漿加護角，又測兩輪。最便宜的，通常不是最省的。']]);
+    },
     after() {
       if (ST.d.pack === 'cheap') {pm({energy: -6, trust: -3}); pmOwe(); ST.d.pack = 'pulp'; ST.d.late = (ST.d.late || 0) + 7}
       ST.d.day = 40;
@@ -256,7 +263,7 @@ STORY.ending3 = function () {
     title, led: '新品沒人買', sub: '第二章結束。從 EVT 到向副總報告，花了 ' + weeks + ' 個禮拜。',
     more: [t.n + ' 個案子 · ' + t.units + ' 台', ({up: '副總：給四個月', one: '副總：再給一季', cut: '副總：暫停推廣'})[r], '單台成本 USD ' + (d.cost || 410)],
     tl: [['Day 1', 'QX-7 啟動'], ['Day ' + Math.max(1, Math.round(day * .3)), 'MP'], ['Day ' + (day + 1), '向副總報告']],
-    stats: [['談成案例', String(t.n)], ['銷售額', qx7M(t.rev)], ['淨賺', qx7M(t.net)], ['團隊信任', pmStat('trust') + '/100'], ['市場信心', pmStat('cust') + '/100'], ['餅乾', String(cookies)]],
+    stats: [['談成案例', String(t.n)], ['銷售額', qx7M(t.rev)], ['淨賺', qx7M(t.net)], ['團隊信任', pmShow('trust')], ['市場信心', pmShow('cust')], ['餅乾', String(cookies)]],
     lines,
     share: '《PM 的一天》第二章：談成 ' + t.n + ' 個案子、銷售額 ' + qx7M(t.rev) + '，淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。'
   };

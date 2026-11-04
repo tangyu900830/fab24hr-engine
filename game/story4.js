@@ -14,7 +14,7 @@ const QK_BASE = 360;   /* 標準版每台成本（美元） */
 const QK_HOUSE = {panel: {nre: 3500, v: 9}, cnc: {nre: 0, v: 28}, mold: {nre: 12000, v: 0}};
 const QK_WIRE = {brand: {nre: 2000, v: 18}, generic: {nre: 0, v: 11}, ask: {nre: 0, v: 8}};
 const QK_SAMPLE = {free: {nre: 3000, thr: 25}, mock: {nre: 800, thr: 10}, none: {nre: 0, thr: 0}};
-const QK_TIER = [1.10, 1.30, 1.50];
+const QK_TIER = [0.12, 0.25, 0.35];   /* 三個檔位的目標毛利率；售價 = 成本 ÷（1 − 毛利率） */
 const QK_FLOOR = 0.15, QK_GOAL = 0.25;   /* KP 的最低毛利率與目標毛利率 */
 
 function qkCost() {
@@ -23,7 +23,7 @@ function qkCost() {
   const v = QK_BASE + h.v + w.v + spec, nre = h.nre + w.nre + s.nre;
   return {v, nre, tc: v + nre / 300, thr: s.thr};
 }
-function qkPrice(i) {return Math.round(qkCost().tc * QK_TIER[i])}
+function qkPrice(i) {return Math.round(qkCost().tc / (1 - QK_TIER[i]))}
 /* 客戶殺價之後的結果 */
 function qkNego(p, how) {
   const c = qkCost(), T = c.thr;
@@ -60,6 +60,11 @@ STORY.beats.push.apply(STORY.beats, [
         ? [['sys', '隔天 Kai 回來了：「她說防水很重要，其他……她說再看看。」多花了一週，只多問到一項。']]
         : [['kai', '好，我跟你說的就是全部了。你就照這個去問吧。']],
     after() {ST.d.day = ST.d.talk === 'again' ? 10 : 3}},
+  {seg: 'c4a', to: 'maggie', guide: '回座位，問 Maggie 客製案怎麼開頭',
+    lines: () => ST.d.cold ? pmM() : [['sys', '你回到座位。Maggie 正在回信，看你站在旁邊，把椅子轉過來。'],
+      ['maggie', '客製案？先別急著問供應商。客戶說的「要」，常常只是她以為需要的。'],
+      ['maggie', '你先問三件事：裝在哪裡、誰會碰到它、現場有沒有水和灰塵。問清楚，能省下一半的成本。']],
+    after() {ST.d.mhelp = (ST.d.mhelp || 0) + 1}},
   {seg: 'c4a', when: () => ST.d.talk === 'direct',
     ring: ['Cora（客戶）', '「視訊會議：QX-7 客製需求」', ANSWER],
     lines: () => [['cora', '嗨，我是 Cora。Kai 說你是 PM，太好了，我想直接跟懂技術的人講。'],
@@ -72,13 +77,13 @@ STORY.beats.push.apply(STORY.beats, [
   {seg: 'c4b',
     ring: ['Owen（機殼廠）', '「PM，你問的客製機殼我報好了～」', ANSWER],
     lines: () => [['owen', '嗨，我是 Owen。客製前面板的話，我給你三個做法。'],
-      ['owen', '第一，只重做前面板：開一副小模具，模具費 USD 3,500，每台加 9 塊。第二，用現有機殼直接 CNC 加工開孔：不用模具費，每台加 28 塊，量大就不划算。第三，整個機殼開新模：模具費 USD 12,000，每台不加錢，不過交期要多四週。'],
+      ['owen', '第一，只重做前面板：開一副小模具，模具費 USD 3,500，每台加 USD 9。第二，用現有機殼直接 CNC 加工開孔：不用模具費，每台加 USD 28，量大就不划算。第三，整個機殼開新模：模具費 USD 12,000，每台不加錢，不過交期要多四週。'],
       ['owen', '我的建議是新模。（笑）不過你自己算。']],
     mini(done) {
       say([['owen', '你要走哪一個？']], null, {choice: [
-        ['只重做前面板：模具費 3,500，每台加 9', () => {ST.d.house = 'panel'; pm({profit: 2}); done()}],
-        ['現有機殼 CNC 加工：沒有模具費，每台加 28', () => {ST.d.house = 'cnc'; pm({profit: 0}); done()}],
-        ['整個機殼開新模：模具費 12,000，每台不加', () => {ST.d.house = 'mold'; pm({profit: -3}); done()}]]});
+        ['只重做前面板：模具費 USD 3,500，每台加 USD 9', () => {ST.d.house = 'panel'; pm({profit: 2}); done()}],
+        ['現有機殼 CNC 加工：沒有模具費，每台加 USD 28', () => {ST.d.house = 'cnc'; pm({profit: 0}); done()}],
+        ['整個機殼開新模：模具費 USD 12,000，每台不加', () => {ST.d.house = 'mold'; pm({profit: -3}); done()}]]});
     },
     post: () => ST.d.house === 'panel'
       ? [['owen', '前面板最常見，我可以先給你模具圖。']]
@@ -88,16 +93,16 @@ STORY.beats.push.apply(STORY.beats, [
     after() {ST.d.day = (ST.d.day || 0) + 4}},
   {seg: 'c4b',
     ring: ['Amy（線材廠）', '「PM，你要的 M12 線來了～」', ANSWER],
-    lines: () => [['amy', '客戶指定的是某個牌子的 M12 防水接頭，一台加 18 塊，但他們的 MOQ 是五百條，你這次只要三百，剩下的兩百要囤在你這邊，等於多付 2,000 美金的庫存。'],
-      ['amy', '我手上還有一個同規格的通用接頭，一台加 11 塊，沒有 MOQ 的問題，只是品牌不一樣，要客戶同意。']],
+    lines: () => [['amy', '客戶指定的是某個牌子的 M12 防水接頭，一台加 USD 18，但他們的 MOQ 是五百條，你這次只要三百，剩下的兩百要囤在你這邊，等於多付 USD 2,000的庫存。'],
+      ['amy', '我手上還有一個同規格的通用接頭，一台加 USD 11，沒有 MOQ 的問題，只是品牌不一樣，要客戶同意。']],
     mini(done) {
       say([['amy', '你想怎麼處理？']], null, {choice: [
-        ['照客戶指定的牌子：每台加 18，多囤 2,000 美金庫存', () => {ST.d.wire = 'brand'; pm({profit: -3}); done()}],
-        ['換通用接頭：每台加 11，但要先問客戶同意', () => {ST.d.wire = 'generic'; pm({profit: 1}); done()}],
+        ['照客戶指定的牌子：每台加 USD 18，多囤 USD 2,000 庫存', () => {ST.d.wire = 'brand'; pm({profit: -3}); done()}],
+        ['換通用接頭：每台加 USD 11，但要先問客戶同意', () => {ST.d.wire = 'generic'; pm({profit: 1}); done()}],
         ['請 Amy 拿通用接頭的認證與測試報告給我，再跟她議價', () => {ST.d.wire = 'ask'; pm({trust: 3, energy: -3, profit: 3}); done()}]]});
     },
     post: () => ST.d.wire === 'ask'
-      ? [['amy', '你這樣問我才好回答。報告我今天寄，量三百的話，我可以再讓你，一台加 8 塊。']]
+      ? [['amy', '你這樣問我才好回答。報告我今天寄，量三百的話，我可以再讓你，一台加 USD 8。']]
       : ST.d.wire === 'generic'
         ? [['amy', '好，我先留三百條給你。記得跟客戶確認，不然到時候退貨我不負責。']]
         : [['amy', '好。多的兩百條，我先放你名下。']],
@@ -117,7 +122,18 @@ STORY.beats.push.apply(STORY.beats, [
         : [['ethan', '不給樣品？那客戶只能靠想像。報價的時候你會比較辛苦。']],
     after() {ST.d.day = (ST.d.day || 0) + 3}},
 
+  {seg: 'c4b', to: 'maggie', guide: '回座位，把供應商的報價讓 Maggie 看看',
+    lines: () => ST.d.cold ? pmM() : [['sys', '你把 Owen 和 Amy 的報價攤在桌上。'],
+      ['maggie', '看到「模具費」和「MOQ」，要在腦子裡換算成每台多少。一次性費用，攤到前三百台來看，才是真的成本。'],
+      ['maggie', '供應商先喊高價是習慣。你多問一句「量大有沒有更好」，通常就有空間。']],
+    after() {ST.d.mhelp = (ST.d.mhelp || 0) + 1}},
   /* 三：算成本、報價 */
+  {seg: 'c4c', to: 'maggie', guide: '去問 Maggie：報價怎麼算才不會虧',
+    lines: () => ST.d.cold ? pmM() : [['sys', 'Maggie 拿起筆，在你的成本表上寫了一行字。'],
+      ['maggie', '售價 = 成本 ÷（1 − 毛利率）。想要 25% 的毛利率，就是成本除以 0.75，不是成本乘 1.25。'],
+      ['maggie', '還有，客戶一定會殺價。先想好底線在哪裡，讓得掉的是哪一塊，再去報價。'],
+      ['maggie', '吃個餅乾會不會好一點？（她打開鐵盒）別緊張，數字算得清楚就不怕。']],
+    after() {ST.d.mhelp = (ST.d.mhelp || 0) + 1; pmBump('energy', 4)}},
   {seg: 'c4c', to: 'kp', guide: '向 KP 報告成本，決定報價',
     lines: () => {
       const c = qkCost();
@@ -127,7 +143,7 @@ STORY.beats.push.apply(STORY.beats, [
         ST.d.talk === 'kai' ? [['kp', '還有，你是不是照 Kai 轉述的規格去問的？客戶真正要的跟他說的，常常不一樣。']] : []);
     },
     mini(done) {
-      const f = i => 'USD ' + qkPrice(i) + '（成本 ×' + QK_TIER[i].toFixed(2) + '）';
+      const f = i => '毛利率 ' + Math.round(QK_TIER[i] * 100) + '%，報價 USD ' + qkPrice(i);
       say([['sys', '三個檔位。客戶一定會砍價，不砍的客戶很少。']], null, {choice: [
         [f(0) + '：低一點，客戶比較容易點頭', () => {ST.d.quote = 0; pm({cust: 3}); done()}],
         [f(1) + '：合理的利潤，留一點讓價空間', () => {ST.d.quote = 1; pm({trust: 2}); done()}],
@@ -148,6 +164,11 @@ STORY.beats.push.apply(STORY.beats, [
         walk ? ['kai', '她的語氣不太好……說這個價格超出預算很多。'] : ['kai', '她說「價格有點高，能不能再算便宜一點」。'],
         ['kai', '拜託，這個案子我這季的業績全靠它。你能不能讓一點？不然客戶就被別人拿走了。']];
     }},
+  {seg: 'c4d', to: 'maggie', guide: '電話之前，先跟 Maggie 對一下殺價的底線',
+    lines: () => ST.d.cold ? pmM() : [['maggie', 'Cora 要打來了？深呼吸。你只要記得三件事：'],
+      ['maggie', '一、不要第一句就降價。二、要讓價，就拿東西換：數量、預付款、交期。三、毛利率掉到 15% 以下，寧可不做。'],
+      ['maggie', '你報的價有你的道理。講價值，不要講「我也很為難」。']],
+    after() {ST.d.mhelp = (ST.d.mhelp || 0) + 1}},
   {seg: 'c4d',
     ring: ['Cora（客戶）', '「關於報價，我想跟你談談」', ANSWER],
     lines: () => {
@@ -198,11 +219,11 @@ STORY.beats.push.apply(STORY.beats, [
           ? [head, ['kp', '在最低和目標之間。可以。但下次殺價的時候，想想有沒有拿東西來換。']]
           : d.result === 'thin'
             ? [head, ['kp', '（臉色沉下來）毛利率不到 ' + Math.round(QK_FLOOR * 100) + '%，低於我說過的最低線。你知道這個案子做完，公司賺多少嗎？'], ['kp', '為了業績賠錢賣，我不接受。下次，報價要守住線。']]
-            : [head, ['kp', '（把報告放下）這個案子是虧的。開發費都還沒賺回來。'], ['kp', '業績是 Kai 的，利潤是你的。你不能為了成交，把利潤丟掉。']];
+            : [head, ['kp', '（把報告放下）這個案子是虧的。開發費都還沒賺回來。'], ['kp', '（聲音變大）業績是 Kai 的，利潤是你的。你不能為了成交，把利潤丟掉！'], ['kp', '你報價之前，有沒有算過殺價之後還剩多少？下次報價之前，先拿底線來給我看。']];
     },
     after() {
       const d = ST.d;
-      pm({trust: d.result === 'great' ? 8 : d.result === 'ok' ? 4 : d.result === 'thin' ? -5 : d.result === 'loss' ? -9 : -4, profit: d.result === 'great' ? 6 : d.result === 'loss' ? -8 : 0});
+      pm({trust: d.result === 'great' ? 8 : d.result === 'ok' ? 4 : d.result === 'thin' ? -5 : d.result === 'loss' ? -9 : -4, profit: d.result === 'great' ? 6 : d.result === 'loss' ? -8 : 0}, '', d.result === 'thin' ? '客製案的毛利率低於 KP 說的最低線' : d.result === 'loss' ? '為了成交把價格壓到虧本' : '報價太高，客戶走了，前面的開發費白花');
       if (d.result === 'thin' || d.result === 'loss' || d.result === 'lost') pmOwe();
     }},
   {seg: 'c4e', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
@@ -235,7 +256,7 @@ STORY.ending4 = function () {
     title, led: '客製報價走鋼索', sub: '第四章結束。從客戶提出需求到成交，花了 ' + weeks + ' 個禮拜。',
     more: [d.units ? d.units + ' 台 · USD ' + d.price + ' / 台' : '沒有成交', '毛利率 ' + (d.units ? (d.m * 100).toFixed(1) + '%（最低線 15%）' : '—')],
     tl: [['Day 1', 'Cora 提出客製'], ['Day ' + Math.max(1, Math.round(day * .6)), '報價送出'], ['Day ' + (day + 1), d.units ? '成交' : '客戶離開']],
-    stats: [['訂單金額', qkM(d.rev || 0)], ['毛利', qkM(d.gain || 0)], ['毛利率', d.units ? (d.m * 100).toFixed(1) + '%' : '—'], ['團隊信任', pmStat('trust') + '/100'], ['客戶信心', pmStat('cust') + '/100'], ['餅乾', String(cookies)]],
+    stats: [['訂單金額', qkM(d.rev || 0)], ['毛利', qkM(d.gain || 0)], ['毛利率', d.units ? (d.m * 100).toFixed(1) + '%' : '—'], ['團隊信任', pmShow('trust')], ['客戶信心', pmShow('cust')], ['餅乾', String(cookies)]],
     lines,
     share: '《PM 的一天》第四章「' + title + '」：' + (d.units ? '訂單 ' + qkM(d.rev) + '，毛利 ' + qkM(d.gain) : '案子沒成') + '。'
   };

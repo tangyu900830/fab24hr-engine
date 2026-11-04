@@ -395,7 +395,7 @@ STORY.ending2 = function () {
     title, led: '型錄風暴', sub: '第三章結束。從 Kai 的第十一次詢問，到型錄交到業務手上，花了 ' + weeks + ' 個禮拜。',
     more: [pages + ' 頁', '渲染圖：' + rend, brief],
     tl: [['Day 1', 'Kai 第十一次詢問'], ['Day 15', '規格收集'], ['Day ' + (day + 1), '型錄交付']],
-    stats: [['團隊信任', pmStat('trust') + '/100'], ['業務滿意', pmStat('cust') + '/100'], ['成本控制', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['型錄頁數', pages + ' 頁']],
+    stats: [['團隊信任', pmShow('trust')], ['業務滿意', pmShow('cust')], ['成本控制', pmShow('profit')], ['精力', pmShow('energy')], ['餅乾', String(cookies)], ['型錄頁數', pages + ' 頁']],
     lines,
     share: '《PM 的一天》第三章「' + title + '」：' + pages + ' 頁、' + cookies + ' 片餅乾。'
   };

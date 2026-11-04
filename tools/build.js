@@ -95,7 +95,7 @@ fs.writeFileSync(path.join(PUB, 'version.json'), JSON.stringify({ build: VER, da
 
 /* ── 測試頁：走路快 6 倍、點擊保護 0、window.__t ── */
 const HOOK = "window.__t={ST:()=>ST,STORY,W:()=>W,cur:()=>{const b=curBeat();return b?{seg:b.seg,to:b.to,q:ST.q}:null},goTo,interact,busy:()=>busy,start:nm=>{hideHome();clearSave();startStory(nm==null?'T':nm)},resume:o=>{hideHome();resumeStory(o)},readSave,snap:()=>W?W.snap():null,"
-  + "ui:{say:(l,o)=>{busy=false;say(l,()=>{},o||{})},ring:(a,b,c)=>ring(a,b,c,()=>{}),toast:(a,b,c)=>toast(a,b,c),title:g=>titleCard(g,()=>{}),codex:t=>openCodex(t),guide:()=>showGuide(),end:()=>ending()},data:()=>({segs:STORY.segs,beats:STORY.beats.map(b=>({seg:b.seg,to:b.to})),cast:STORY.cast,places:STORY.places,terms:TERM.G})};";
+  + "ui:{say:(l,o)=>{busy=false;say(l,()=>{},o||{})},ring:(a,b,c)=>ring(a,b,c,()=>{}),toast:(a,b,c)=>toast(a,b,c),title:g=>titleCard(g,()=>{}),codex:t=>openCodex(t),guide:()=>showGuide(),end:()=>ending()},data:()=>({segs:STORY.segs,beats:STORY.beats.map(b=>({seg:b.seg,to:b.to})),cast:STORY.cast,places:STORY.places,terms:TERM.G}),sim:" + fs.readFileSync(path.join(__dirname, 'sim.js'), 'utf8') + "};";
 let t = sub(js, 's=ch.speed*dt;', 's=ch.speed*dt*6;'); t = sub(t, 'const TAP=400;', 'const TAP=0;');
 const test = bundle(t, 'test', HOOK);
 fs.copyFileSync(three, path.join(OUT, 'three.min.js'));

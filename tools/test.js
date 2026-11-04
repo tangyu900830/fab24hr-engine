@@ -42,6 +42,7 @@ async function play(br, o) {
   const vis = s => pg.evaluate(s => { const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' }, s);
   const click = async s => { try { await pg.click(s, { timeout: 5000 }); return true } catch (e) { log.push('miss:' + s); return false } };
   while (steps++ < 700) {
+    if (o.preset && !o.presetDone && await pg.evaluate(() => !!window.__t.ST().d.chapter)) { o.presetDone = true; await pg.evaluate(p => Object.assign(window.__t.ST().d, p), o.preset) }   /* 先把信任壓到很低：測資遣 */
     if (await vis('#end')) {
       if (o.chain > 0 && await vis('#endNext .btn')) { o.chain--; log.push('NEXT'); await pg.waitForTimeout(500); await pg.click('#endNext .btn'); await pg.waitForTimeout(400); continue }
       ended = true; break }
@@ -75,9 +76,11 @@ async function play(br, o) {
     await click('#endRep'); await pg.waitForTimeout(300); await pg.screenshot({ path: path.join(OUT, 'shot-' + o.id + '-recap.png') });
   } else await pg.screenshot({ path: path.join(OUT, 'shot-' + o.id + '-end.png') });
   const end = ended ? await pg.textContent('#endRpt') : '';
+  const must = !o.mustHave || (o.mustHave.test(end) && !(await vis('#endNext .btn')));   /* 資遣：要寫出原因，而且不能有「接著玩」 */
   console.log(o.id + '：ended: ' + ended + '，card: ' + card + '｜' + log.join(' ') + '\n  ' + end.replace(/\s+/g, ' ').slice(0, 200) + '\n  ERRORS ' + errors.length + (errors.length ? '\n  ' + errors.slice(0, 5).join('\n  ') : ''));
   await ctx.close();
-  return ended && card && !errors.length;
+  if (!must) console.log('  MISSING: ' + o.mustHave);
+  return ended && card && !errors.length && must;
 }
 
 /* 瀏覽器：CHROMIUM 指定的 → playwright-core 自己下載的 → 電腦上裝好的（兩種常見的 channel）。都不行就告訴使用者怎麼裝 */
@@ -97,8 +100,9 @@ async function browser() {
   if (!/\/\*! Made with the fab24hr engine .*fab24hr engine License/.test(fs.existsSync(pub) ? fs.readFileSync(pub, 'utf8') : '')) { console.error('public/index.html has lost the engine license notice (/*! Made with the fab24hr engine … */); run npm run build ／ public/index.html 少了框架的授權聲明，重新 npm run build'); console.log('TEST FAILED'); process.exit(1) }
   if (CREDIT.some(c => !c[1])) { console.error('engine/home.js must define CREDIT_URL and COFFEE_URL ／ engine/home.js 要有 CREDIT_URL 與 COFFEE_URL'); console.log('TEST FAILED'); process.exit(1) }
   const br = await browser();
-  const a = await play(br, { id: 'desktop', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Alex', dial: true });
-  const b = await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true });
+  const ONLY = process.env.ONLY;
+  const a = ONLY ? true : await play(br, { id: 'desktop', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Alex', dial: true });
+  const b = ONLY ? true : await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true });
   /* 另外幾條路：第一章的轉接頭（有書面）、第一章得罪 Maggie（最後一個選項）、第二章全部第一個／全部最後一個 */
   const extra = [
     { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/線材風波/, /轉接頭出貨/, /書面確認/] },
@@ -109,9 +113,10 @@ async function browser() {
     { id: 'c4good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Dee', pick: [/客製新案/, /視訊/, /只重做前面板/, /認證與測試報告/, /外觀模型/, /合理的利潤/, /降 5%/] },
     { id: 'c4bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/客製新案/] },
     { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/型錄風暴/] },
+    { id: 'fired', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Fay', last: true, pick: [/型錄風暴/], preset: { trust: 0, neg: 3, bad: ['測試：多次沒有確認就往下做'] }, mustHave: /資遣通知/ },
     { id: 'chain', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Ray', chain: 2, pick: [/客製新案/] }
   ];
-  const rest = []; for (const o of extra) rest.push(await play(br, o));
+  const rest = []; for (const o of extra) if (!ONLY || o.id === ONLY) rest.push(await play(br, o));
   await br.close();
   const ok = a && b && rest.every(Boolean);
   console.log(ok ? 'TEST OK' : 'TEST FAILED');
