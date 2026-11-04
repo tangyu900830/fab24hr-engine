@@ -207,7 +207,7 @@ STORY.beats.push.apply(STORY.beats, [
     }},
   {seg: 'c4e', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
     lines: () => [['sys', '你回到座位，一個人坐了一會兒。'],
-      ['maggie', '來，餅乾。'],
+      ['maggie', '要不要吃個餅乾？也許會好一點。（她打開鐵盒）'],
       ['maggie', '報價這種事，沒有人一次就抓得準。記下來：這次你的成本是多少，客戶的底線在哪，下次就有基準了。']],
     after() {pmCookie()}},
   {seg: 'c4e', end: true,

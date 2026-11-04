@@ -4,6 +4,7 @@
      WORLD.cast[id]={label,fill,ink,cloth,color,hair,long,node,face,speed,hidden}
         場景裡的人。'me' 是玩家。label 是頭上的名牌；fill／ink 名牌底色與字色；cloth 衣服、color 名牌色塊、hair 頭髮（0xRRGGBB）；
         node 一開始站的點；face 面向（弧度）；hidden 一開始不在場（W.show(id,true) 才出現）。
+     另外：cast 可以寫 carry:true（W.carry(id,true/false) 讓他抱著一箱貨）、rig:'forklift'（坐在電動插車上，W.carry 控制貨叉上有沒有貨）。W.moving(id) 回傳他是不是還在走。
      WORLD.level   一開始就蓋的關卡（levelAdd(名字, build) 登記的那一個）
      WORLD.shots   主頁背景的幾個鏡頭 [{p:[x,y,z],d:距離,yaw,pitch},…]
      WORLD.items[kind]=(g,K)=>{…}   撿得到的東西長什麼樣子（沒有登記的只有一顆閃光）
@@ -164,9 +165,30 @@ function initWorld(){
     const head=new T.Mesh(new T.BoxGeometry(.48,.48,.48),headMats(o));head.position.y=1.68;head.castShadow=true;g.add(head);
     const tag=plate(o.label||id,o.fill||'#33454f',o.ink||'#ffffff');tag.position.set(0,2.4,0);g.add(tag);g.userData.tag=tag;
     const pk=box(.9,2.1,.9,M.hidden,0,1.05,0,g,false);pk.userData.pick=id;pickables.push(pk);
+    /* 搬東西：o.carry 時可以用 W.carry(id,true) 抱一箱貨；o.rig==='forklift' 是坐在電動插車上（貨放在貨叉上） */
+    let load=null;
+    if(o.rig==='forklift'){
+      [legL,legR].forEach(l=>{l.visible=false});[armL,armR].forEach(a=>{a.position.y-=.42;a.position.z=.1});torso.position.y-=.42;head.position.y-=.42;tag.position.y=2.05;
+      const fk=new T.Group(),fm=lam(o.rigColor!=null?o.rigColor:0xf2a21c),dk=lam(0x2a3036),gy=lam(0x8a9298);
+      const fb=(w,h,d,m,x,y,z)=>{const q=new T.Mesh(new T.BoxGeometry(w,h,d),m);q.position.set(x,y,z);q.castShadow=true;fk.add(q);return q};
+      fb(.95,.5,1.5,fm,0,.5,-.1);fb(.8,.3,.7,dk,0,.85,-.55);
+      [[-.5,.2,.45],[.5,.2,.45],[-.5,.2,-.6],[.5,.2,-.6]].forEach(p=>fb(.16,.4,.4,dk,p[0],p[1],p[2]));
+      [[-.42,1.5,-.35],[.42,1.5,-.35],[-.42,1.5,.4],[.42,1.5,.4]].forEach(p=>fb(.05,1.0,.05,gy,p[0],p[1]-.2,p[2]));fb(.95,.05,.85,gy,0,1.98,.03);
+      fb(.08,1.9,.08,gy,-.3,.95,.85);fb(.08,1.9,.08,gy,.3,.95,.85);fb(.7,.06,.06,gy,0,1.5,.85);
+      fb(.1,.06,.9,gy,-.28,.12,1.3);fb(.1,.06,.9,gy,.28,.12,1.3);
+      g.add(fk);
+      load=new T.Group();load.position.set(0,.2,1.35);load.visible=false;g.add(load);
+      const pm_=lam(0xb88b55),bx=lam(0xc9a06a);
+      const lb=(w,h,d,m,x,y,z)=>{const q=new T.Mesh(new T.BoxGeometry(w,h,d),m);q.position.set(x,y,z);q.castShadow=true;load.add(q)};
+      lb(.8,.1,.8,pm_,0,.1,0);lb(.7,.45,.7,bx,0,.42,0);lb(.6,.4,.6,bx,0,.85,0)
+    }else if(o.carry){
+      load=new T.Group();load.position.set(0,1.05,.5);load.visible=false;g.add(load);
+      const q=new T.Mesh(new T.BoxGeometry(.55,.42,.42),lam(0xc9a06a));q.castShadow=true;load.add(q);
+      const t=new T.Mesh(new T.BoxGeometry(.12,.02,.44),lam(0xf0e6c8));t.position.y=.22;load.add(t)
+    }
     scene.add(g);
     const node=o.node&&NODES[o.node]?o.node:Object.keys(NODES)[0];
-    const ch={id,g,legL,legR,armL,armR,head,path:[],node,home:node,face:o.face||0,speed:o.speed||(id==='me'?5:5.6),phase:Math.random()*6,hop:0,cb:null};
+    const ch={id,g,load,rig:o.rig==='forklift',legL,legR,armL,armR,head,path:[],node,home:node,face:o.face||0,speed:o.speed||(id==='me'?5:5.6),phase:Math.random()*6,hop:0,cb:null};
     place(ch,node);return ch}
   function place(ch,node){const n=NODES[node]||[0,0];ch.g.position.set(n[0],0,n[1]);ch.node=node;ch.path=[];ch.cb=null;ch.g.rotation.y=ch.face;ch.target=ch.face}
   const chars={},HIDDEN0=[];
@@ -189,6 +211,7 @@ function initWorld(){
     else{ch.head.rotation.x=0}
     ch.head.rotation.y=(moving||reduceMotion)?0:Math.sin(ch.phase*.5)*.12;
     if(ch.hop>0){ch.hop=Math.max(0,ch.hop-dt*2.2);p.y=Math.sin(ch.hop*Math.PI)*.4}else p.y=0;
+    if(ch.rig||(ch.load&&ch.load.visible)){ch.armL.rotation.x=ch.armR.rotation.x=-1.25}
   }
   function walkXZ(id,x,z,cb){const ch=chars[id],p=ch.g.position;ch.node=null;ch.path=findPath(p.x,p.z,x,z).map(q=>new T.Vector3(q[0],0,q[1]));ch.cb=cb||null;if(!ch.path.length&&cb){ch.cb=null;cb()}}
   let freeOn=false;const keys={},KEY={ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r'};
@@ -352,6 +375,8 @@ function initWorld(){
     tower(id,state){setTower(id,state)},
     alarm(id){const old=alarmId;alarmId=id||null;if(old&&old!==alarmId&&towers[old])setTower(old,towers[old].state);if(alarmId)setTower(alarmId,'red')},
     show(id,on){if(chars[id])chars[id].g.visible=!!on},
+    moving(id){const c=chars[id];return !!(c&&c.path.length)},
+    carry(id,on){const c=chars[id];if(c&&c.load)c.load.visible=!!on},
     put(id,node){const ch=chars[id],p=NODES[node];if(!ch||!p)return;ch.path=[];ch.cb=null;ch.node=node;ch.home=node;ch.g.position.set(p[0],0,p[1])},
     screen(id,lines,color){const s=screens[id];if(!s)return;s.st.lines=lines;if(color)s.st.color=color;s.redraw()},
     focus(at,dist){focus=at?{pos:new T.Vector3(at[0],at[1],at[2]),dist:dist||11}:null},

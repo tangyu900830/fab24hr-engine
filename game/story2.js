@@ -64,7 +64,7 @@ STORY.beats.push.apply(STORY.beats, [
       say([['kp', '有問題嗎？']], null, {choice: [
         ['沒問題。我會提供完整的規格內容，但請行銷先定好範圍和對象', () => {ST.d.kp1 = 'ok'; pm({trust: 3}); done()}],
         ['這是行銷的案子，我只是支援', () => {ST.d.kp1 = 'push'; pm({trust: -3}); pmOwe(); done()}],
-        ['兩週太趕了，不太可能', () => {ST.d.kp1 = 'no'; pm({trust: -6}); pmOwe(); done()}]]});
+        ['兩週太趕了，不太可能', () => {ST.d.kp1 = 'no'; pm({trust: -6}, '', 'KP 要求兩週交出型錄，你直接說不可能，沒有提出替代方案'); pmOwe(); done()}]]});
     },
     post: () => ST.d.kp1 === 'ok'
       ? [['kp', '（點頭）先問範圍，這個想法對。'],
@@ -77,7 +77,7 @@ STORY.beats.push.apply(STORY.beats, [
     after() {if (W) W.show('kai', false); pm2Cast({})}},
   {seg: 'c2a', to: 'maggie', guide: '回座位，Maggie 在對你招手',
     lines: () => (ST.d.owed > 0
-      ? [['sys', '你回到座位，Maggie 把椅子滑過來。'], ['maggie', '又被點名了。來，餅乾。']]
+      ? [['sys', '你回到座位，Maggie 把椅子滑過來。'], ['maggie', '又被點名了。吃片餅乾，會不會好一點？（她遞了一片過來）']]
       : [['sys', '你回到座位，Maggie 把椅子滑過來。'], ['maggie', '還好嗎？剛剛 Kai 那個嗓門，連茶水間都聽得見。']]).concat([
       ['maggie', '型錄這種跨部門的案子，最怕三件事：範圍一直變、誰負責什麼不清楚、每個人都有意見但沒人拍板。'],
       ['maggie', '開會的時候，先問一句：最後拍板的人是誰。再問一句：什麼時候要定稿。'],
@@ -103,7 +103,7 @@ STORY.beats.push.apply(STORY.beats, [
     mini(done) {
       say([['sys', '所有人的眼睛都看向你。KP 沒有說話。']], null, {choice: [
         ['先問：這本型錄的讀者是誰？要解決什麼問題？決定範圍和頁數，再談內容', () => {ST.d.scope = 'clear'; pm({trust: 3}); done()}],
-        ['這些問題是前一任 PM 留下來的，不是我造成的', () => {ST.d.scope = 'blame'; pm({trust: -8}); pmOwe(); done()}],
+        ['這些問題是前一任 PM 留下來的，不是我造成的', () => {ST.d.scope = 'blame'; pm({trust: -8}, '', '把型錄的問題推給前一任 PM，沒有說明你要怎麼處理'); pmOwe(); done()}],
         ['好，我會想辦法把全部都處理好', () => {ST.d.scope = 'take'; pm({energy: -12, trust: -1}); done()}]]});
     },
     post: () => ST.d.scope === 'clear'
@@ -132,7 +132,7 @@ STORY.beats.push.apply(STORY.beats, [
       say([['sys', 'Lena 一邊說，一邊已經在白板上寫了「渲染圖：PM」。']], null, {choice: [
         ['好，我去跟 Ian 要', () => {ST.d.rend = 'me'; pm({energy: -6, trust: 2}); done()}],
         ['渲染圖不是我這邊的事，行銷可以直接去找 Ian 要。我可以提供規格和尺寸', () => {ST.d.rend = 'mk'; pm({trust: 2, cust: -2}); done()}],
-        ['那不是我的工作', () => {ST.d.rend = 'rude'; pm({trust: -8, cust: -4}); pmOwe(); done()}]]});
+        ['那不是我的工作', () => {ST.d.rend = 'rude'; pm({trust: -8, cust: -4}, '', '對行銷說「那不是我的工作」，不肯配合'); pmOwe(); done()}]]});
     },
     post: () => (ST.d.rend === 'me'
       ? [['lena', '太好了，謝謝！那就麻煩你了。'], ['sys', 'Lena 擦掉「PM」，寫上你的名字。這個字，會跟著你一個月。']]
@@ -187,7 +187,7 @@ STORY.beats.push.apply(STORY.beats, [
       ['kai', '我跟 A 客戶講的就是 12 到 24 伏。他說他們現場是 36 伏，所以沒有買我們的。'],
       ['kai', '（聲音很低）我不是要罵你。但上次丟單，是客戶等太久；這次丟單，是客戶拿到錯的數字。我真的很需要一個可以相信的答案。'],
       ['sys', 'Kai 沒有提高音量，但你寧可他罵你。你站在那裡，一個字都說不出口。']],
-    after() {pmOwe(); pm({trust: -10, cust: -12}, '一個客戶，因為一個沒有查證的數字。')}},
+    after() {pmOwe(); pm({trust: -10, cust: -12}, '一個客戶，因為一個沒有查證的數字。', '型錄上的數字沒有查證，讓客戶拿到錯誤的資料')}},
   {seg: 'c2c', to: 'maggie', guide: '回座位', when: () => ST.d.quick === true,
     lines: () => [['sys', '你回到座位，沒說話。Maggie 沒有多問，把餅乾盒推了過來。'],
       ['maggie', '憑印象回答，是每個 PM 都犯過的錯。重點是你現在知道了。'],
@@ -209,13 +209,13 @@ STORY.beats.push.apply(STORY.beats, [
       say([['sys', '大家的視線再一次聚過來。草稿裡，每一頁都有不同顏色的便利貼。']], null, {choice: [
         ['拿出上次的會議紀錄：決議是依產業、二十四頁。要加頁，就要決定拿掉什麼', () => {
           if (ST.d.mins) {ST.d.pages = 24; ST.d.dir = 'minutes'; pm({trust: 8})}
-          else {ST.d.pages = 40; ST.d.dir = 'nomin'; pm({trust: -8}); pmOwe()}
+          else {ST.d.pages = 40; ST.d.dir = 'nomin'; pm({trust: -8}, '', '開會沒有留會議紀錄，型錄的方向被反覆推翻'); pmOwe()}
           done()}],
         ['都先收下來，我再看怎麼排', () => {ST.d.pages = 60; ST.d.dir = 'take'; pm({energy: -15, trust: -3}); done()}],
         ['請 KP 決定：預算只有二十四頁，要加什麼，就要換掉什麼', () => {
           ST.d.dir = 'kp';
           if (ST.d.scope === 'clear') {ST.d.pages = 24; pm({trust: 4})}
-          else {ST.d.pages = 32; pm({trust: -4}); pmOwe()}
+          else {ST.d.pages = 32; pm({trust: -4}, '', '型錄的範圍沒有談清楚，頁數越加越多'); pmOwe()}
           done()}]]});
     },
     post: () => (ST.d.dir === 'minutes'
@@ -244,7 +244,7 @@ STORY.beats.push.apply(STORY.beats, [
     after() {}},
   {seg: 'c2d', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
     lines: () => [['sys', '你回到座位，覺得頭有點悶。'],
-      ['maggie', '開完會比開會前累，是吧。來，餅乾。'],
+      ['maggie', '開完會比開會前累，是吧。要不要吃個餅乾？也許會好一點。（她打開鐵盒）'],
       ['maggie', '紀錄、範圍、拍板的人。這三樣，就是型錄案的命。']],
     after() {pmCookie()}},
 
@@ -273,7 +273,7 @@ STORY.beats.push.apply(STORY.beats, [
     after() {
       ST.d.day = 30;
       if (ST.d.brief === 'me') pm({cust: -2});
-      if (ST.d.brief === 'none') {pm({trust: -4}); pmOwe()}
+      if (ST.d.brief === 'none') {pm({trust: -4}, '', '要 Ian 做渲染圖卻沒有先寫 brief'); pmOwe()}
       if (ST.d.brief === 'three' && W) {W.put('lena', 'mt1'); W.put('ian', 'mt3')}   /* 三個人都到大會議室 */
     }},
   {seg: 'c2e', to: 'meeting', guide: '去大會議室 A，跟 Lena、Ian 一起對 brief', when: () => ST.d.brief === 'three',
@@ -286,7 +286,7 @@ STORY.beats.push.apply(STORY.beats, [
     after() {if (W) {W.walk('lena', 'meetdoor', () => W.put('lena', 'mk2')); W.walk('ian', 'meetdoor', () => W.put('ian', 'id1'))}}},
   {seg: 'c2e', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
     lines: () => [['sys', '你回到座位，覺得今天說的話比做的事還多。'],
-      ['maggie', '來，餅乾。'],
+      ['maggie', '吃個餅乾會不會好一點？（她把鐵盒推到你面前）'],
       ['maggie', '你剛剛有沒有發現？同一個問題，行銷說「PM 不配合」，Ian 說「行銷沒給 brief」。兩邊都沒說謊，只是沒人把需求寫下來。'],
       ['maggie', '以後，你就當那個把需求寫下來的人。不是替他們做，是讓他們自己寫得出來。']],
     after() {pmCookie()}},
@@ -344,7 +344,7 @@ STORY.beats.push.apply(STORY.beats, [
     }},
   {seg: 'c2f', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
     lines: () => [['sys', '你回到座位。窗外天已經黑了。'],
-      ['maggie', '今天被說了不少。來，餅乾，最後一片。'],
+      ['maggie', '今天被說了不少。吃片餅乾，會不會好一點？（她遞了一片過來）'],
       ST.d.specOK ? ['maggie', '不過你今天站得住。那份簽核，是你兩週前花時間換來的。'] : ['maggie', '錯誤是兩週前就種下的。現在能抓到，已經比印出去才發現好。'],
       ['maggie', '下一次，把「誰簽核」寫進規格，每一頁都寫。']],
     after() {pmCookie()}},
@@ -363,7 +363,7 @@ STORY.beats.push.apply(STORY.beats, [
     },
     after() {if (!(ST.d.specOK && ST.d.pages <= 24)) pmOwe()}},
   {seg: 'c2g', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
-    lines: () => [['sys', '你回到座位，Maggie 把最後一片餅乾放在你鍵盤上。'],
+    lines: () => [['sys', '你回到座位，Maggie 把一片餅乾放在你鍵盤上。'],
       ['maggie', '你做得比你自己以為的好。這種案子，沒有人是無傷過關的。'],
       ['maggie', '來，吃吧。']],
     after() {pmCookie()}},
@@ -392,11 +392,11 @@ STORY.ending2 = function () {
     d.cold ? '' : cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾，每一片都是被說了之後才有的。' : '這一路上，你一片餅乾也沒吃到。'
   ].filter(Boolean);
   return {
-    title, led: '型錄風暴', sub: '第二章結束。從 Kai 的第十一次詢問，到型錄交到業務手上，花了 ' + weeks + ' 個禮拜。',
+    title, led: '型錄風暴', sub: '第三章結束。從 Kai 的第十一次詢問，到型錄交到業務手上，花了 ' + weeks + ' 個禮拜。',
     more: [pages + ' 頁', '渲染圖：' + rend, brief],
     tl: [['Day 1', 'Kai 第十一次詢問'], ['Day 15', '規格收集'], ['Day ' + (day + 1), '型錄交付']],
     stats: [['團隊信任', pmStat('trust') + '/100'], ['業務滿意', pmStat('cust') + '/100'], ['成本控制', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['型錄頁數', pages + ' 頁']],
     lines,
-    share: '《PM 的一天》第二章「' + title + '」：' + pages + ' 頁、' + cookies + ' 片餅乾。'
+    share: '《PM 的一天》第三章「' + title + '」：' + pages + ' 頁、' + cookies + ' 片餅乾。'
   };
 };
