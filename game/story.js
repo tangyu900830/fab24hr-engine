@@ -21,6 +21,7 @@ const pmMark = v => v >= 8 ? '↑↑' : v > 0 ? '↑' : v <= -8 ? '↓↓' : v <
 /* 一次改幾個數值，並在畫面上跳一下變化 */
 function pm(o, note) {
   const parts = [];
+  if (o.trust <= -4) ST.d.neg = (ST.d.neg || 0) + 1;   /* 選到很差的選項的次數（資遣、Maggie 離職會看它） */
   Object.keys(o).forEach(k => {pmBump(k, o[k]); const a = pmMark(o[k]); if (a) parts.push((ST.d.chapter === 4 ? PMNAME4 : ST.d.chapter === 3 ? PMNAME3 : ST.d.chapter === 2 ? PMNAME2 : PMNAME)[k] + ' ' + a)});
   if (parts.length) toast(parts.join('　'), note || '');
 }
@@ -37,7 +38,7 @@ const pmDay = (h, m, plus) => ((ST.d.day || 0) + (plus || 0)) * 1440 + h * 60 + 
 /* 把人擺回預設的位置；o 裡有寫的就照 o（null 是不在場） */
 function pmCast(o) {
   if (!W) return;
-  const base = {kp: 'kpdoor', maggie: 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null};
+  const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null};
   Object.assign(base, o);
   Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
 }
@@ -561,15 +562,16 @@ STORY.beats = [
 ];
 
 /* 兩章：開頭選一章。第一章的事只在選第一章時發生 */
-/* 故事清單：加一章就在這裡加一行，「桌上有幾件事」會自己跟著變 */
-const PMCH = ['第一章：線材風波——客戶現場出事了', '第二章：型錄風暴——業務、行銷與你', '第三章：新品沒人買——從 EVT 到向副總報告', '第四章：客製報價走鋼索——太貴客戶不買，太低主管會罵'];
+/* 故事清單：加一章就在這裡加一行，「桌上有幾件事」會自己跟著變。id 是故事檔裡用的章號（跟順序無關） */
+const PMCH = [{id: 3, t: '第一章：新品推出，為公司創造營收', s: '新品推出'}, {id: 2, t: '第二章：型錄風暴，業務行銷與你', s: '型錄風暴'},
+  {id: 1, t: '第三章：線材風波，接手爛攤子', s: '線材風波'}, {id: 4, t: '第四章：客製新案，和客戶報價', s: '客製新案'}];
 const PMNUM = ['', '一', '兩', '三', '四', '五', '六', '七', '八'];
 STORY.segs.menu = {name: '今天要處理哪一件事', sub: PMNUM[PMCH.length] + '個故事都在棲光科技。順序沒關係。', t: 520, mood: 'day', scene() {pmCast({})}};
 STORY.beats.forEach(b => {const w = b.when; b.when = () => ST.d.chapter !== 2 && ST.d.chapter !== 3 && ST.d.chapter !== 4 && (!w || w())});
-STORY.beats.unshift({seg: 'menu',
+STORY.beats.unshift({seg: 'menu', when: () => !ST.d.chapter,
   lines: () => [['sys', '棲光科技的早上。你的桌上有' + PMNUM[PMCH.length] + '件事在等你。']],
   mini(done) {
-    say([['sys', '先處理哪一件？']], null, {choice: PMCH.map((t, i) => [t, () => {ST.d.chapter = i + 1; done()}])});
+    say([['sys', '先處理哪一件？']], null, {choice: PMCH.map(c => [c.t, () => {ST.d.chapter = c.id; done()}])});
   }});
 
 /* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */
@@ -603,12 +605,12 @@ STORY.ending = () => {
     d.cold ? '你一開始就對 Maggie 說了重話。之後不管被罵得多慘，她都沒有拿出餅乾，也沒有再教你什麼。' : cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾。每一片，都是被罵之後才有的。' : '這一路上，你一片餅乾也沒吃到。'
   ];
   return {
-    title, led: '線材風波', sub: '第一章結束。從出事到收尾，花了 ' + weeks + ' 個禮拜。',
+    title, led: '線材風波', sub: '第三章結束。從出事到收尾，花了 ' + weeks + ' 個禮拜。',
     more: [pmWho(), '規格：' + spec, '驗證：' + test],
     tl: [['Day 1', '客戶現場出事'], ['Day ' + ((d.rday || 0) + 1), '決定換線'], ['Day ' + (day + 1), '客戶回饋']],
     stats: [['團隊信任', pmStat('trust') + '/100'], ['客戶滿意', pmStat('cust') + '/100'], ['利潤', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['耗時（週）', String(weeks)]],
     lines,
-    share: '《PM 的一天》第一章「' + title + '」：' + weeks + ' 週、' + cookies + ' 片餅乾。'
+    share: '《PM 的一天》第三章「' + title + '」：' + weeks + ' 週、' + cookies + ' 片餅乾。'
   };
 };
 

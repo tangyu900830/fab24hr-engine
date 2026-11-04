@@ -42,7 +42,9 @@ async function play(br, o) {
   const vis = s => pg.evaluate(s => { const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' }, s);
   const click = async s => { try { await pg.click(s, { timeout: 5000 }); return true } catch (e) { log.push('miss:' + s); return false } };
   while (steps++ < 700) {
-    if (await vis('#end')) { ended = true; break }
+    if (await vis('#end')) {
+      if (o.chain > 0 && await vis('#endNext .btn')) { o.chain--; log.push('NEXT'); await pg.waitForTimeout(500); await pg.click('#endNext .btn'); await pg.waitForTimeout(400); continue }
+      ended = true; break }
     if (await vis('#tcard')) { await click('#tcGo'); log.push('card'); await pg.waitForTimeout(350); continue }   /* 字卡淡出的 240 毫秒還看得到、但按不到 */
     if (await vis('#toastGo')) { await click('#toastGo'); log.push('answer'); continue }
     if (await vis('#pull')) {   /* 小遊戲：磨豆機 */
@@ -99,14 +101,15 @@ async function browser() {
   const b = await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true });
   /* 另外幾條路：第一章的轉接頭（有書面）、第一章得罪 Maggie（最後一個選項）、第二章全部第一個／全部最後一個 */
   const extra = [
-    { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/第一章/, /轉接頭出貨/, /書面確認/] },
-    { id: 'c1cold', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第一章/] },
-    { id: 'c2good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Joy', pick: [/第二章/] },
-    { id: 'c3good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Eve', pick: [/第三章/] },
-    { id: 'c3bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第三章/] },
-    { id: 'c4good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Dee', pick: [/第四章/, /視訊/, /只重做前面板/, /認證與測試報告/, /外觀模型/, /合理的利潤/, /降 5%/] },
-    { id: 'c4bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第四章/] },
-    { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第二章/] }
+    { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/線材風波/, /轉接頭出貨/, /書面確認/] },
+    { id: 'c1cold', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/線材風波/] },
+    { id: 'c2good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Joy', pick: [/型錄風暴/] },
+    { id: 'c3good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Eve', pick: [/新品推出/] },
+    { id: 'c3bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/新品推出/] },
+    { id: 'c4good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Dee', pick: [/客製新案/, /視訊/, /只重做前面板/, /認證與測試報告/, /外觀模型/, /合理的利潤/, /降 5%/] },
+    { id: 'c4bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/客製新案/] },
+    { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/型錄風暴/] },
+    { id: 'chain', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Ray', chain: 2, pick: [/客製新案/] }
   ];
   const rest = []; for (const o of extra) rest.push(await play(br, o));
   await br.close();

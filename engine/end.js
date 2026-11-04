@@ -7,6 +7,7 @@
      led   燈條上遊戲名後面的幾個字              tl    最多三個時間點 [[時刻, 說明], …]（預設：開始與結束）
      share 「複製結算」與「分享連結」帶的那段字（預設：標題＋sub）
    圖卡最多放 stats 的前六個。遊戲名、網址、標語、小字從 SHARE 來；沒填就用 HOME 的標題、副標、小字。
+   next   [[按鈕上的字, 按了做什麼], …]：結算畫面多幾顆按鈕（例如「接著玩別的故事」）
    按鈕：分享連結（手機叫系統的分享選單，電腦複製連結）、看結案報告／看圖卡、再玩一次、複製結算、回主頁。
    下面的連結跟主頁一樣：遊戲作者的贊助（HOME.support），與框架的出處那一行（engine/home.js；授權的條件，一定顯示）。 */
 const endEl=$('#end');
@@ -22,6 +23,7 @@ function ending(){
     +(E.stats&&E.stats.length?'<dl class="kv end-stats">'+E.stats.map(r=>'<dt>'+r[0]+'</dt><dd'+(typeof r[1]==='number'?' class="mono"':'')+'>'+String(r[1]).replace(/^([^\/]+)(\/.*)$/,'$1<small class="of">$2</small>')+'</dd>').join('')+'</dl>':'')
     +(E.lines||[]).map(l=>'<p>'+l+'</p>').join('')
     +(ST.name?'<p class="fine">'+esc(ST.name)+'</p>':''));
+  const nx=$('#endNext');nx.innerHTML='';(E.next||[]).forEach(x=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=x[0];b.onclick=()=>{endEl.hidden=true;x[1]()};nx.appendChild(b)});nx.hidden=!(E.next&&E.next.length);
   const sp=$('#endSupport');if(HOME.support&&HOME.support.url){sp.href=HOME.support.url;sp.textContent=HOME.support.label||'支持作者';sp.hidden=false}else sp.hidden=true;
   $('#endCredit').href=CREDIT_URL;$('#endCoffee').href=COFFEE_URL;
   $('#endCopy').textContent='複製結算';$('#endLink').textContent='分享連結';

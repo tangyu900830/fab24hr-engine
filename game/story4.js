@@ -37,7 +37,7 @@ function qkNego(p, how) {
 STORY.segs.c4a = {name: '客戶要客製', sub: 'Kai 說，有個客戶想要 QX-7 的客製版。', t: 540, mood: 'day', scene() {pm4Cast({})},
   note: '客製的第一步，是弄清楚客戶「真正」要什麼。'};
 STORY.segs.c4b = {name: '問供應商', sub: '成本與細節，要從供應商那邊挖出來。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm4Cast({})}};
-STORY.segs.c4c = {name: '算成本、定報價', sub: '太貴客戶不買，太低主管會罵。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pm4Cast({})},
+STORY.segs.c4c = {name: '算成本、定報價', sub: '價格不能太高，也不能太低。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pm4Cast({})},
   note: '報價不是猜一個數字，是從成本一路往上算。'};
 STORY.segs.c4d = {name: '客戶殺價', sub: '報價送出去了。', get t() {return pmDay(10, 30)}, mood: 'day', scene() {pm4Cast({})}};
 STORY.segs.c4e = {name: '向 KP 報告', sub: '毛利是多少，KP 看得很清楚。', get t() {return pmDay(16, 0)}, mood: 'day', scene() {pm4Cast({})}};
@@ -122,8 +122,8 @@ STORY.beats.push.apply(STORY.beats, [
     lines: () => {
       const c = qkCost();
       return [['sys', '你把成本表攤開：標準版 USD ' + QK_BASE + '，加上客製的部分，每台 USD ' + Math.round(c.v) + '，一次性費用 ' + qkM(c.nre) + '，攤到前三百台，每台再加 ' + Math.round(c.nre / 300) + '，總共每台 USD ' + Math.round(c.tc) + '。'],
-        ['kp', '毛利率最低要 ' + Math.round(QK_FLOOR * 100) + '%，目標 ' + Math.round(QK_GOAL * 100) + '%。低於最低的我會罵人。'],
-        ['kp', '另外，客戶一定會殺價，你報價的時候要把這一刀算進去。但報太高，客戶直接不買。你決定。']].concat(
+        ['kp', '毛利率最低要 ' + Math.round(QK_FLOOR * 100) + '%，目標 ' + Math.round(QK_GOAL * 100) + '%。低於最低線，這個案子就不值得做了。'],
+        ['kp', '另外，客戶一定會殺價，報價的時候要把這一刀算進去。但報太高，客戶直接不買。你來決定，我相信你算得清楚。']].concat(
         ST.d.talk === 'kai' ? [['kp', '還有，你是不是照 Kai 轉述的規格去問的？客戶真正要的跟他說的，常常不一樣。']] : []);
     },
     mini(done) {
@@ -134,10 +134,10 @@ STORY.beats.push.apply(STORY.beats, [
         [f(2) + '：高一點，留足殺價空間', () => {ST.d.quote = 2; pm({profit: 2}); done()}]]});
     },
     post: () => ST.d.quote === 0
-      ? [['kp', '（盯著數字）這個價，毛利很薄，殺一刀就沒了。你確定？']]
+      ? [['kp', '（看了看數字）這個價毛利很薄，殺一刀就低於最低線了。你確定嗎？']]
       : ST.d.quote === 1
         ? [['kp', '（點頭）有留空間。去送吧。']]
-        : [['kp', '（皺眉）夠高。客戶不買的話，前面花的錢全部白費。']],
+        : [['kp', '（想了想）留了很多空間。只是客戶如果覺得太貴，前面花的錢就白費了。']],
     after() {ST.d.day = (ST.d.day || 0) + 2}},
 
   /* 四：客戶殺價 */
@@ -190,10 +190,10 @@ STORY.beats.push.apply(STORY.beats, [
   {seg: 'c4e', to: 'kp', guide: '向 KP 報告結果',
     lines: () => {
       const d = ST.d, c = qkCost();
-      if (d.result === 'lost') return [['me', '客戶沒有接受報價，案子沒成。前面花了 ' + qkM(c.nre) + ' 的開發與樣品費。'], ['kp', '價格報到客戶的預算外，這筆費用就白花了。報價不是越高越好。'], ['kp', '下次報價前，先問客戶預算大概在哪，然後再決定。']];
+      if (d.result === 'lost') return [['me', '客戶沒有接受報價，案子沒成。前面花了 ' + qkM(c.nre) + ' 的開發與樣品費。'], ['kp', '價格超出客戶的預算，這筆費用就白花了。報價不是越高越好。'], ['kp', '沒關係，報價是練出來的。下次先問客戶預算大概在哪，再決定。']];
       const head = ['me', '成交了：' + d.units + ' 台，單價 USD ' + d.price + '，總額 ' + qkM(d.rev) + '，毛利 ' + qkM(d.gain) + '，毛利率 ' + (d.m * 100).toFixed(1) + '%。'];
       return d.result === 'great'
-        ? [head, ['kp', '（難得笑）毛利率超過目標。你報價有留空間，殺價的時候也守住了線。'], ['kp', '客製案，就是要這樣。']]
+        ? [head, ['kp', '（笑）毛利率超過目標。你報價有留空間，殺價的時候也守住了線。'], ['kp', '客製案，就是要這樣。']]
         : d.result === 'ok'
           ? [head, ['kp', '在最低和目標之間。可以。但下次殺價的時候，想想有沒有拿東西來換。']]
           : d.result === 'thin'

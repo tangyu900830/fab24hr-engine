@@ -30,13 +30,14 @@ STORY.cast = {
   nora: {name: 'Nora', role: '副總', tag: 'VP', color: '#6b4f9a', about: '管整個產品事業群。一個問題問到底：「所以呢？數字在哪裡？下一步是什麼？」不喜歡聽藉口，也不討厭壞消息，只要你講得清楚。'},
   hank: {name: 'Hank', role: '智慧零售與交通業務', tag: '業務', color: '#d6502b', about: '負責零售與交通客戶的業務，客戶跟你有一點重疊。熱心，愛交朋友，常說「我的客戶也有這個需求」。'},
   dani: {name: 'Dani', role: '海外經銷商窗口', tag: '經銷', color: '#9a7a2f', about: '在東南亞幫棲光賣設備。說話直接，很清楚當地客戶要什麼價格。只用電話和 email 出現。'},
+  tina: {name: 'Tina', role: '人資（HR）', tag: 'HR', color: '#3d8f7a', about: '人力資源部門。平常負責入職、薪資與請假，說話輕、條理清楚。你只會在最不想見到她的那天，才真的跟她說上話。'},
   owen: {name: 'Owen', role: '機殼廠業務', tag: '供應商', color: '#4a7f2b', about: '合作的機殼加工廠業務。開模、CNC 加工、打樣的價格與交期都找他。習慣先報一個最高的價，再看你怎麼回。只用電話出現。'},
   cora: {name: 'Cora', role: '客戶・採購與專案窗口', tag: '客戶', color: '#5d6d77', about: '智慧倉儲自走車公司的採購兼專案負責人。很懂行情，禮貌，但一定會殺價。技術細節要你直接跟她說，Kai 轉述不清楚。只用電話與視訊出現。'},
   huang: {name: 'Mr. Huang', role: '終端客戶・廠務主管', tag: '客戶', color: '#5d6d77', about: '真的在用這批設備的人。他不管誰的錯，他只要設備能開機。'}
 };
 WORLD.cast = {
   me: {label: '你・PM', fill: '#f2b01e', ink: '#231800', cloth: 0x3b4a5a, color: 0xc98a00, hair: 0x2b2320, node: 'start', face: Math.PI / 2},
-  kp: {label: 'KP・主管', fill: '#2b6bd6', ink: '#ffffff', cloth: 0x2f4f7f, color: 0x2b6bd6, hair: 0x1c1c1c, node: 'kpdoor', face: Math.PI},
+  kp: {label: 'KP・主管', fill: '#2b6bd6', ink: '#ffffff', cloth: 0x2f4f7f, color: 0x2b6bd6, hair: 0x1c1c1c, node: 'kp', face: Math.PI / 2},
   maggie: {label: 'Maggie・導師', fill: '#2f9a6a', ink: '#ffffff', cloth: 0x3f7f64, color: 0x2f9a6a, hair: 0x4a2b1b, long: true, node: 'maggie', face: 0},
   kai: {label: 'Kai・業務', fill: '#d6502b', ink: '#ffffff', cloth: 0x8a3b2a, color: 0xd6502b, hair: 0x3a2a1c, node: 'kaiW', face: -Math.PI / 2, hidden: true},
   ethan: {label: 'Ethan・RD', fill: '#7a4fd6', ink: '#ffffff', cloth: 0x4b3a7f, color: 0x7a4fd6, hair: 0x23201c, node: 'ethan', face: 0},
@@ -47,6 +48,7 @@ WORLD.cast = {
   ian: {label: 'Ian・ID', fill: '#b8892a', ink: '#ffffff', cloth: 0x4a4a3a, color: 0xb8892a, hair: 0x2a2420, node: 'id1', face: 0, hidden: true},
   nora: {label: 'Nora・副總', fill: '#6b4f9a', ink: '#ffffff', cloth: 0x3a2f55, color: 0x6b4f9a, hair: 0x2a2a2e, long: true, node: 'mtw', face: 0, hidden: true},
   hank: {label: 'Hank・業務', fill: '#d6502b', ink: '#ffffff', cloth: 0x2f5a6a, color: 0xd6502b, hair: 0x3a2a1c, node: 'hk', face: 0, hidden: true},
+  tina: {label: 'Tina・HR', fill: '#3d8f7a', ink: '#ffffff', cloth: 0x2f6f5f, color: 0x3d8f7a, hair: 0x2a2020, long: true, node: 'mt1', face: 0, hidden: true},
   victor: {label: 'Victor・SI', fill: '#8d4a6b', ink: '#ffffff', cloth: 0x5b3a4b, color: 0x8d4a6b, hair: 0x1f1a17, node: 'mt1', face: 0, hidden: true}
 };
 
@@ -54,6 +56,9 @@ WORLD.cast = {
 STORY.places = {
   desk: {name: '你的座位', at: [-2.9, -1.4], mark: [-2.9, 2.5, -2.9], go: '回自己的座位'},
   warehouse: {name: '倉庫', at: [9.65, -13.0], mark: [6.95, 3.0, -15.8], go: '去倉庫'},
+  factory: {name: '工廠', at: [-5.4, -13.3], mark: [-8.5, 3.0, -14.6], go: '去工廠'},
+  pantry: {name: '茶水間', at: [12.7, -5.2], mark: [13.3, 2.6, -6.6], go: '去茶水間'},
+  mdesk: {name: 'Maggie 的座位', at: [-0.8, -1.85], mark: [-0.8, 2.5, -2.9], go: '去 Maggie 的座位'},
   meeting: {name: '大會議室 A', at: [-8.6, -2.9], mark: [-8.6, 2.9, -3.0], go: '去大會議室 A'}
 };
 
@@ -85,6 +90,9 @@ const GLOSS = [
   ['DVT', '設計驗證。EVT 的問題修完之後，再做一批更接近成品的樣品，驗證設計能不能通過各種測試與認證。'],
   ['PVT', '試產。在工廠實際跑一小批，確認量產的流程順不順、品質穩不穩。'],
   ['MP', '量產。正式開始大量生產與出貨，跟試產不同，這時候交期與品質都要穩。'],
+  ['資遣', '公司因為績效或組織調整，終止勞動契約。依規定要提前通知，並給資遣費。通常由主管說明原因，人資負責辦手續。'],
+  ['HR / 人資', '人力資源部門。負責招募、薪資、請假，也負責離職與資遣的手續。'],
+  ['八卦指數', '你在茶水間聽了多少八卦。聽得少，什麼都不知道；聽得多，有時能拿到有用的資訊，有時同事會覺得你太愛打聽。'],
   ['客製 / 客製化', '依照單一客戶的需求，修改標準產品的一部分：換接頭、換面板、加模組、印客戶的標誌。通常要多花一筆開發費，量要夠大才划算。'],
   ['NRE / 開模費', '一次性的開發費用，例如開模具、治具、認證。不管後來賣幾台都要付，所以要攤到每一台的價格裡。'],
   ['毛利 / 毛利率', '賣價扣掉成本剩下的錢叫毛利；毛利除以賣價就是毛利率。公司通常有一條最低線，低於它就不接。'],

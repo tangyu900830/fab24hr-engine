@@ -84,8 +84,8 @@ STORY.beats.push.apply(STORY.beats, [
     }},
 
   /* 二：PVT */
-  {seg: 'c3b', to: 'warehouse', guide: '去倉庫，看 PVT 的老化測試架',
-    lines: () => [['sys', '現在是 PVT：在工廠試跑一百台。一百台 QX-7 在 50 度恆溫箱裡跑滿載。標準是 72 小時，三天；有人建議縮短到 24 小時。']],
+  {seg: 'c3b', to: 'factory', guide: '去工廠，看 PVT 的老化測試櫃',
+    lines: () => [['sys', '現在是 PVT：隔壁工廠的產線試跑一百台。成品包好之後，會從工廠的門推進倉庫。老化測試櫃裡，一百台 QX-7 在 50 度下跑滿載。標準是 72 小時，三天；有人建議縮短到 24 小時。']],
     mini(done) {
       say([['sys', '老化測試，是在出貨前把「早夭」的機器先挑出來。']], null, {choice: [
         ['照標準跑 72 小時', () => {ST.d.burn = 'long'; pm({energy: -4, trust: 3, profit: -2}); done()}],
@@ -127,7 +127,7 @@ STORY.beats.push.apply(STORY.beats, [
       else qx7Deal('工廠外觀檢測 SI', 60, 560);
     }},
   {seg: 'c3d', to: 'warehouse', guide: '去倉庫，看 QX-7 的庫存',
-    lines: () => [['sys', '層架上疊著量產第一批的六百台。賣掉的只有九十台，每放一個月都在付倉儲費、佔用資金。']].concat(ST.d.burn === 'short' ? [['sys', '兩個箱子貼著紅色的「退貨待檢」標籤。']] : []),
+    lines: () => [['sys', '層架上疊著量產第一批的六百台，都是隔壁工廠做好、一批一批推進來的。賣掉的只有九十台，每放一個月都在付倉儲費、佔用資金。']].concat(ST.d.burn === 'short' ? [['sys', '兩個箱子貼著紅色的「退貨待檢」標籤。']] : []),
     mini(done) {
       say([['sys', '六百台不能一直放著。']], null, {choice: [
         ['搭配舊機型做「升級組合」，低價讓客戶試用', () => {ST.d.stock = 'bundle'; pm({profit: -2, cust: 4, energy: -3}); done()}],
@@ -251,11 +251,11 @@ STORY.ending3 = function () {
     d.cold ? '' : cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾。' : '這一路上，你一片餅乾也沒吃到。'
   ]).filter(Boolean);
   return {
-    title, led: '新品沒人買', sub: '第三章結束。從 EVT 到向副總報告，花了 ' + weeks + ' 個禮拜。',
+    title, led: '新品沒人買', sub: '第一章結束。從 EVT 到向副總報告，花了 ' + weeks + ' 個禮拜。',
     more: [t.n + ' 個案子 · ' + t.units + ' 台', ({up: '副總：給四個月', one: '副總：再給一季', cut: '副總：暫停推廣'})[r], '單台成本 USD ' + (d.cost || 410)],
     tl: [['Day 1', 'QX-7 啟動'], ['Day ' + Math.max(1, Math.round(day * .3)), 'MP'], ['Day ' + (day + 1), '向副總報告']],
     stats: [['談成案例', String(t.n)], ['銷售額', qx7M(t.rev)], ['淨賺', qx7M(t.net)], ['團隊信任', pmStat('trust') + '/100'], ['市場信心', pmStat('cust') + '/100'], ['餅乾', String(cookies)]],
     lines,
-    share: '《PM 的一天》第三章：談成 ' + t.n + ' 個案子、銷售額 ' + qx7M(t.rev) + '，淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。'
+    share: '《PM 的一天》第一章：談成 ' + t.n + ' 個案子、銷售額 ' + qx7M(t.rev) + '，淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。'
   };
 };
