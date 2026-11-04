@@ -45,7 +45,7 @@ STORY.beats.push.apply(STORY.beats, [
   /* 一：啟動、EVT、包材 */
   {seg: 'c3a', to: 'kp', guide: '去 KP 辦公室，聽新案子',
     lines: () => [['kp', 'QX-7。無風扇、能跑影像辨識的工控機，規格是我們這個等級最強的。老闆覺得規格這麼強，一定賣得掉。'],
-      ['kp', '你從頭帶：EVT、PVT、MP、包材、落摔測試。目標成本每台美金 410 以內。先決定散熱怎麼做。']],
+      ['kp', '你從頭帶：EVT 找問題，DVT 驗證設計，PVT 試產，最後才量產。還有包材和落摔測試。目標成本每台美金 410 以內。先決定散熱怎麼做。']],
     mini(done) {
       say([['sys', '無風扇，熱要靠機殼散出去。這會決定成本，也決定客戶放不放心。']], null, {choice: [
         ['全鋁機殼被動散熱：最貴，工廠粉塵也不怕', () => {ST.d.thermal = 'alu'; pm({profit: -8, cust: 4}); done()}],
@@ -63,7 +63,7 @@ STORY.beats.push.apply(STORY.beats, [
         ['只修最明顯的兩個，其他等量產再說', () => {ST.d.evt = 'rush'; pm({energy: 2, trust: -2}); done()}]]});
     },
     post: () => ST.d.evt === 'list'
-      ? [['ethan', '清單、分級、期限。這樣我才知道先做哪個。']]
+      ? [['ethan', '清單、分級、期限。這樣我才知道先做哪個。修完這幾個，我們進 DVT，再進 PVT。']]
       : [['ethan', '（皺眉）過熱降速和接頭鬆，量產只會更明顯。']]},
   {seg: 'c3a', to: 'grace', guide: '找 Grace，做包材的落摔測試',
     lines: () => [['grace', '整箱從 80 公分摔六個面、十二次，機器不能壞。QX-7 是整塊鋁，將近四公斤，包材先決定再測。']],
@@ -85,7 +85,7 @@ STORY.beats.push.apply(STORY.beats, [
 
   /* 二：PVT */
   {seg: 'c3b', to: 'warehouse', guide: '去倉庫，看 PVT 的老化測試架',
-    lines: () => [['sys', '一百台 QX-7 在 50 度恆溫箱裡跑滿載。標準是 72 小時，三天；有人建議縮短到 24 小時。']],
+    lines: () => [['sys', '現在是 PVT：在工廠試跑一百台。一百台 QX-7 在 50 度恆溫箱裡跑滿載。標準是 72 小時，三天；有人建議縮短到 24 小時。']],
     mini(done) {
       say([['sys', '老化測試，是在出貨前把「早夭」的機器先挑出來。']], null, {choice: [
         ['照標準跑 72 小時', () => {ST.d.burn = 'long'; pm({energy: -4, trust: 3, profit: -2}); done()}],

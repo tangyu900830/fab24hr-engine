@@ -104,6 +104,8 @@ async function browser() {
     { id: 'c2good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Joy', pick: [/第二章/] },
     { id: 'c3good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Eve', pick: [/第三章/] },
     { id: 'c3bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第三章/] },
+    { id: 'c4good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Dee', pick: [/第四章/, /視訊/, /只重做前面板/, /認證與測試報告/, /外觀模型/, /合理的利潤/, /降 5%/] },
+    { id: 'c4bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第四章/] },
     { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第二章/] }
   ];
   const rest = []; for (const o of extra) rest.push(await play(br, o));
