@@ -69,7 +69,8 @@ levelAdd('office', function (K) {
   screen('mag', G, XS[1], 1.1, ROWS[1] - .27, .7, .39, ['Roadmap', 'Q1 Review'], '#7fe3c8');
   screen('rd', G, XS[4], 1.1, ROWS[0] - .27, .7, .39, ['SCH rev.C', 'ECN 12'], '#c9a8ff');
   B(.3, .16, .3, lam(0xd9a066), XS[1] + .6, .85, ROWS[1] + .1); B(.32, .04, .32, lam(0xb77a3a), XS[1] + .6, .95, ROWS[1] + .1);
-  label('產品部 PM', -1.85, -.3, 2.8, G); label('RD', 5.5, -4.8, 1.6, G); label('業務部', -.8, 4.3, 2.0, G);
+  label('產品部 PM', -1.85, -.3, 2.8, G); label('行銷部', 5.5, 4.3, 1.8, G); label('ID 設計', -0.8, -4.8, 1.8, G);
+  screen('ian', G, XS[1], 1.1, ROWS[0] - .27, .7, .39, ['Render v3', 'KeyShot'], '#ffb870'); label('RD', 5.5, -4.8, 1.6, G); label('業務部', -.8, 4.3, 2.0, G);
 
   /* 大會議室 A：玻璃隔間、長桌、十二張椅子、牆上大螢幕 */
   B(6.5, 2.4, .08, M.glass, -12.75, 1.2, -2.2, false); B(2.2, 2.4, .08, M.glass, -6.6, 1.2, -2.2, false);
@@ -198,9 +199,9 @@ levelAdd('office', function (K) {
     kpdoor: [9.6, -2.1], kaiW: [9.6, -3.5], kpd: [11.5, -2.1], kp: [14.0, -2.2], pantry: [12.7, -5.2], wcd: [10.6, 5.2], wc: [12.3, 5.2],
     mine: [-2.9, -1.85], maggie: [-.8, -1.85], ethan: [5.5, -6.35], kaiD: [-2.9, 2.65], grace: [.5, 5.9],
     whd: [9.7, -10.3], wh1: [9.65, -13.0], whs: [6.95, -17.8], whk: [11.15, -16.4],
-    mt0: [-8.6, -3.4], mt1: [-11.8, -4.0], mt2: [-6.9, -4.2], mt3: [-10.2, -3.4], mtw: [-14.9, -6.2]
+    mt0: [-8.6, -3.4], mt1: [-11.8, -4.0], mt2: [-6.9, -4.2], mt3: [-10.2, -3.4], mk1: [3.4, 2.65], mk2: [5.5, 2.65], id1: [-0.8, -6.35], mtw: [-14.9, -6.2]
   },'door-start start-lobby lobby-fl fl-fm fm-fr fr-fc fc-a2c a2c-a1c a2c-kpdoor kpdoor-kaiW kaiW-a1c kpdoor-kpd kpd-kp fl-a2l a2l-a2m a2m-a2r a2r-a2c a2l-a1l a1l-a1m a1m-a1r a1r-a1c a1c-pantry '
-    + 'a1c-whd whd-wh1 wh1-whs wh1-whk lobby-meetdoor meetdoor-a2l meetdoor-mt0 mt0-mt3 mt3-mt1 mt0-mt2 mt1-mtw fc-wcd wcd-wc fm-grace mine-a2l maggie-a2m ethan-a1r kaiD-fl');
+    + 'mk1-fm mk2-fr id1-a1m a1c-whd whd-wh1 wh1-whs wh1-whk lobby-meetdoor meetdoor-a2l meetdoor-mt0 mt0-mt3 mt3-mt1 mt0-mt2 mt1-mtw fc-wcd wcd-wc fm-grace mine-a2l maggie-a2m ethan-a1r kaiD-fl');
 
   /* 可以點的地方：自己的座位、會議室的長桌（id 跟 STORY.places 一樣） */
   K.pickBox('desk', 1.9, 1.6, 1.2, XS[0], .8, ROWS[1] - .2, G);

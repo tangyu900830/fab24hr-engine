@@ -24,6 +24,9 @@ STORY.cast = {
   walter: {name: 'Walter', role: '總裁', tag: 'CEO', color: '#8a6d1f', about: '不常出現在產品部。一出現，通常是事情已經大到沒人能決定。'},
   victor: {name: 'Victor', role: 'SI 窗口', tag: 'SI', color: '#8d4a6b', about: '系統整合商的窗口，棲光的大客戶。客氣的時候很客氣，翻臉的時候也很快。'},
   amy: {name: 'Amy', role: '線材廠業務', tag: '線材', color: '#4a7f2b', about: '合作的線材廠業務。報價、打樣、交期都找她，MOQ 她也說得算一半。'},
+  lena: {name: 'Lena', role: '行銷經理', tag: '行銷', color: '#c2417a', about: '負責型錄、展覽和品牌。想法很多，每個都很有道理，改方向的速度比你整理資料還快。'},
+  zoe: {name: 'Zoe', role: '行銷專員', tag: 'Zoe', color: '#e0803a', about: '行銷部的設計與排版。喜歡用「情境」和「故事」講產品，也喜歡在會議裡補充「我覺得還可以…」。'},
+  ian: {name: 'Ian', role: 'ID（工業設計師）', tag: 'ID', color: '#b8892a', about: '產品外觀的設計師，也是渲染圖的人。一個人服務三個部門，要什麼先寫清楚，他才開始動。'},
   huang: {name: 'Mr. Huang', role: '終端客戶・廠務主管', tag: '客戶', color: '#5d6d77', about: '真的在用這批設備的人。他不管誰的錯，他只要設備能開機。'}
 };
 WORLD.cast = {
@@ -34,6 +37,9 @@ WORLD.cast = {
   ethan: {label: 'Ethan・RD', fill: '#7a4fd6', ink: '#ffffff', cloth: 0x4b3a7f, color: 0x7a4fd6, hair: 0x23201c, node: 'ethan', face: 0},
   grace: {label: 'Grace・電腦 Team', fill: '#0f8f9a', ink: '#ffffff', cloth: 0x2b6f78, color: 0x0f8f9a, hair: 0x2a1c18, long: true, node: 'grace', face: 0},
   walter: {label: 'Walter・總裁', fill: '#8a6d1f', ink: '#ffffff', cloth: 0x3a3a3a, color: 0x8a6d1f, hair: 0x8f8f8f, node: 'mtw', face: 0, hidden: true},
+  lena: {label: 'Lena・行銷', fill: '#c2417a', ink: '#ffffff', cloth: 0x7a3a5a, color: 0xc2417a, hair: 0x3b2a22, long: true, node: 'mk2', face: 0, hidden: true},
+  zoe: {label: 'Zoe・行銷', fill: '#e0803a', ink: '#ffffff', cloth: 0x9a6a3a, color: 0xe0803a, hair: 0x5a3a22, long: true, node: 'mk1', face: 0, hidden: true},
+  ian: {label: 'Ian・ID', fill: '#b8892a', ink: '#ffffff', cloth: 0x4a4a3a, color: 0xb8892a, hair: 0x2a2420, node: 'id1', face: 0, hidden: true},
   victor: {label: 'Victor・SI', fill: '#8d4a6b', ink: '#ffffff', cloth: 0x5b3a4b, color: 0x8d4a6b, hair: 0x1f1a17, node: 'mt1', face: 0, hidden: true}
 };
 
@@ -67,6 +73,14 @@ const GLOSS = [
   ['回收', '把已經出貨的東西收回來，換成正確的。成本高，但最乾淨。'],
   ['樣品機 / 實機', '真正的設備本體。規格表上寫的數字，最後要拿實機接上去量過，才算數。'],
   ['量產', '開始大量製造。打樣沒問題之後，才會進入量產。'],
+  ['型錄', '把公司所有產品的規格、照片和賣點印成（或做成檔案的）一本冊子，給業務拿去給客戶看。'],
+  ['ID / 工業設計', '工業設計師。負責產品的外觀、造型和顏色，產品的 3D 渲染圖通常出自他們。'],
+  ['渲染圖', '用電腦畫出來、看起來像照片的產品圖。產品還沒做出來、或不方便拍照的時候，型錄和簡報都靠它。'],
+  ['行銷', '負責品牌、型錄、展覽、廣告這些「讓人知道你的產品」的同事。'],
+  ['會議紀錄', '開完會後寫下來的：決議了什麼、誰負責、什麼時候要完成。寄給所有人，之後就有依據。'],
+  ['brief', '給設計師或外包的一頁需求說明：要做什麼、給誰看、需要幾張、什麼時候要。寫不清楚，對方只能猜。'],
+  ['校稿', '印出來之前，把稿子裡的字、數字、圖逐一對過，找錯字和錯誤的規格。'],
+  ['勘誤 / 勘誤貼紙', '印出去才發現錯，只好貼一張小貼紙或附一張更正單。看起來不專業，但便宜、快。'],
   ['書面確認 / 書面同意 / 白紙黑字', '用信件或簽名文件留下的同意。口頭說「OK」，出事的時候很容易變成「我沒說過」。']
 ];
 termsSet(GLOSS, ' / ', [], []);

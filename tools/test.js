@@ -41,7 +41,7 @@ async function play(br, o) {
   /* 看得到：有畫出來的方框（畫面上的東西多半是 position:fixed，offsetParent 永遠是 null，不能用它判斷） */
   const vis = s => pg.evaluate(s => { const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' }, s);
   const click = async s => { try { await pg.click(s, { timeout: 5000 }); return true } catch (e) { log.push('miss:' + s); return false } };
-  while (steps++ < 400) {
+  while (steps++ < 700) {
     if (await vis('#end')) { ended = true; break }
     if (await vis('#tcard')) { await click('#tcGo'); log.push('card'); await pg.waitForTimeout(350); continue }   /* 字卡淡出的 240 毫秒還看得到、但按不到 */
     if (await vis('#toastGo')) { await click('#toastGo'); log.push('answer'); continue }
@@ -56,7 +56,10 @@ async function play(br, o) {
     if (await vis('#dlg')) {
       if (!mid && log.length > 4) { mid = true; await pg.screenshot({ path: path.join(OUT, 'shot-' + o.id + '-talk.png') }) }
       const ch = await pg.$$('#dlg .choice');
-      if (ch.length) { await ch[o.last ? ch.length - 1 : 0].click(); log.push('choice'); continue }
+      if (ch.length) {   /* o.pick：依序比對選項文字，比到的就選那個；比不到就照第一個／最後一個 */
+        let k = o.last ? ch.length - 1 : 0;
+        if (o.pick) { const tx = await Promise.all(ch.map(c => c.textContent())); const i = tx.findIndex(t => o.pick.some(r => r.test(t))); if (i >= 0) k = i }
+        await ch[k].click(); log.push('choice'); continue }
       await click('#dlgNext'); continue;
     }
     if (await vis('#gGo')) { const c = await pg.evaluate(() => window.__t.cur()); log.push('go:' + (c && c.to)); await click('#gGo'); await pg.waitForFunction(() => document.getElementById('guide').hidden || !document.getElementById('dlg').hidden, null, { timeout: 8000 }).catch(() => {}); continue }   /* 走到了才會開口 */
@@ -94,7 +97,16 @@ async function browser() {
   const br = await browser();
   const a = await play(br, { id: 'desktop', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Alex', dial: true });
   const b = await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true });
+  /* 另外幾條路：第一章的轉接頭（有書面）、第一章得罪 Maggie（最後一個選項）、第二章全部第一個／全部最後一個 */
+  const extra = [
+    { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/第一章/, /轉接頭出貨/, /書面確認/] },
+    { id: 'c1cold', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第一章/] },
+    { id: 'c2good', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Joy', pick: [/第二章/] },
+    { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/第二章/] }
+  ];
+  const rest = []; for (const o of extra) rest.push(await play(br, o));
   await br.close();
-  console.log(a && b ? 'TEST OK' : 'TEST FAILED');
-  process.exit(a && b ? 0 : 1);
+  const ok = a && b && rest.every(Boolean);
+  console.log(ok ? 'TEST OK' : 'TEST FAILED');
+  process.exit(ok ? 0 : 1);
 })().catch(e => { console.error(e); console.log('TEST FAILED'); process.exit(1) });

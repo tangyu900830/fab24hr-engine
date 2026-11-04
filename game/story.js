@@ -12,13 +12,14 @@
 /* ── 四個數值 ── */
 const PMBASE = {trust: 50, cust: 50, profit: 50, energy: 70};
 const PMNAME = {trust: '信任', cust: '客戶', profit: '利潤', energy: '精力'};
+const PMNAME2 = {trust: '信任', cust: '業務滿意', profit: '成本', energy: '精力'};
 const pmStat = k => ST.d[k] == null ? PMBASE[k] : ST.d[k];
 function pmBump(k, v) {ST.d[k] = Math.max(0, Math.min(100, pmStat(k) + v))}
 const pmMark = v => v >= 8 ? '↑↑' : v > 0 ? '↑' : v <= -8 ? '↓↓' : v < 0 ? '↓' : '';
 /* 一次改幾個數值，並在畫面上跳一下變化 */
 function pm(o, note) {
   const parts = [];
-  Object.keys(o).forEach(k => {pmBump(k, o[k]); const a = pmMark(o[k]); if (a) parts.push(PMNAME[k] + ' ' + a)});
+  Object.keys(o).forEach(k => {pmBump(k, o[k]); const a = pmMark(o[k]); if (a) parts.push((ST.d.chapter === 2 ? PMNAME2 : PMNAME)[k] + ' ' + a)});
   if (parts.length) toast(parts.join('　'), note || '');
 }
 /* 被罵了一次（記下來，下次 Maggie 才會拿出餅乾） */
@@ -33,7 +34,7 @@ const pmDay = (h, m, plus) => ((ST.d.day || 0) + (plus || 0)) * 1440 + h * 60 + 
 /* 把人擺回預設的位置；o 裡有寫的就照 o（null 是不在場） */
 function pmCast(o) {
   if (!W) return;
-  const base = {kp: 'kpdoor', maggie: 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null};
+  const base = {kp: 'kpdoor', maggie: 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null};
   Object.assign(base, o);
   Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
 }
@@ -537,6 +538,17 @@ STORY.beats = [
     lines: () => [['sys', ST.d.result === 'fail' ? '線材風波暫時告一段落。但這份報告，你得好好寫。' : '線材風波，到這裡告一段落。客戶上線了，你的手機終於安靜了。']]}
 ];
 
+/* 兩章：開頭選一章。第一章的事只在選第一章時發生 */
+STORY.segs.menu = {name: '今天要處理哪一件事', sub: '兩個故事都在棲光科技。順序沒關係。', t: 520, mood: 'day', scene() {pmCast({})}};
+STORY.beats.forEach(b => {const w = b.when; b.when = () => ST.d.chapter !== 2 && (!w || w())});
+STORY.beats.unshift({seg: 'menu',
+  lines: () => [['sys', '棲光科技的早上。你的桌上有兩件事在等你。']],
+  mini(done) {
+    say([['sys', '先處理哪一件？']], null, {choice: [
+      ['第一章：線材風波——客戶現場出事了', () => {ST.d.chapter = 1; done()}],
+      ['第二章：型錄風暴——業務、行銷與你', () => {ST.d.chapter = 2; done()}]]});
+  }});
+
 /* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */
 STORY.beats.forEach(b => {
   if (b.to === 'maggie' && b.seg !== 'open' || (b.seg === 'open' && b.to === 'maggie' && b.guide.indexOf('回座位') === 0)) {
@@ -546,6 +558,7 @@ STORY.beats.forEach(b => {
 
 /* 結算卡：照實際發生的事寫 */
 STORY.ending = () => {
+  if (ST.d.chapter === 2) return STORY.ending2();
   const d = ST.d, day = d.day || 0, weeks = Math.max(1, Math.ceil(day / 7)), res = d.result || 'clean', cookies = d.cookies || 0;
   const title = res === 'fail' ? '線材又錯了一次'
     : d.path === 'adapter' ? '繞了一大圈，還是把線換對了'
@@ -580,7 +593,10 @@ const PMIDLE = {
   maggie: ['有問題隨時問我。', '先把手上的事做完，再來找我。'],
   kai: ['（頭也沒抬）別擋著我打電話。'],
   ethan: ['你要問什麼，先想清楚再來。'],
-  grace: ['需要測試的東西，拿來我這裡。']
+  grace: ['需要測試的東西，拿來我這裡。'],
+  lena: ['等一下，我在想另一個方向。', '我覺得還可以更好。'],
+  zoe: ['我在排版，等一下好嗎？'],
+  ian: ['要東西，先給我 brief。']
 };
 STORY.talk = id => {
   const L = PMIDLE[id];
