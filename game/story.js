@@ -24,6 +24,7 @@ function pm(o, note) {
 /* 被罵了一次（記下來，下次 Maggie 才會拿出餅乾） */
 const pmOwe = () => {ST.d.owed = (ST.d.owed || 0) + 1};
 function pmCookie() {
+  if (ST.d.cold) return;
   ST.d.owed = Math.max(0, (ST.d.owed || 0) - 1); ST.d.cookies = (ST.d.cookies || 0) + 1;
   pmBump('energy', 12); toast('餅乾 +1', '精力回復了一點');
 }
@@ -35,6 +36,11 @@ function pmCast(o) {
   const base = {kp: 'kpdoor', maggie: 'maggie', ethan: 'ethan', grace: 'grace', kai: null, walter: null, victor: null};
   Object.assign(base, o);
   Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
+}
+/* 得罪了 Maggie：她的每一段話都換成冷淡的一句，也不再給餅乾 */
+function pmM(lines) {
+  if (!ST.d.cold) return lines;
+  return [['sys', ['Maggie 頭也沒抬，盯著螢幕。你站了一下，她沒說話。', '你走過去。Maggie 只是「嗯」了一聲，沒有拿出餅乾。', 'Maggie 在回信，連眼角都沒瞄你。'][(ST.d.coldN = ((ST.d.coldN || 0) + 1)) % 3]]];
 }
 const pmWho = () => ({return: '全數回收', adapter: '先附轉接頭', split: '先逐一問機型'})[ST.d.path] || '';
 
@@ -58,6 +64,11 @@ STORY.segs = {
 
 /* ── 向 Maggie 請教（可以重複問，直到你覺得夠了）── */
 function pmMentor(done) {
+  if (ST.d.cold) {
+    say([['maggie', '（沒有抬頭）流程就是：確認規格、打樣、報價、請示、下單、等貨、實測。細節自己問 Ethan 和 Grace。'],
+      ['sys', '你想再問，Maggie 已經戴上耳機。']], done);
+    return;
+  }
   const Q = [
     ['一條線要怎麼做出來？', [
       ['maggie', '先跟 RD 和電腦 Team 確認規格：接頭、功率、長度。然後找線材廠打樣、報價，請 KP 批准，談 MOQ，下單量產，等貨。'],
@@ -90,6 +101,15 @@ STORY.beats = [
       ['maggie', '正常。前任走得急，東西沒交接乾淨。有不懂的、不好意思問別人的，都可以來問我。'],
       ['maggie', '我先提醒你：Kai 昨晚在群組裡發了三次「急」。今天早上大概不會太平靜。'],
       ['me', '……我先把咖啡喝完。']],
+    mini(done) {
+      say([['maggie', '我先提醒你一句：KP 今天心情不會好，Kai 也是。你要不要先看一下他們昨天傳的訊息，我可以跟你一起看。']], null, {choice: [
+        ['謝謝，那我們一起看一下', () => {pm({trust: 2}); done()}],
+        ['我晚點再看，先去忙我的', () => done()],
+        ['不用啦，我自己會處理，妳不用一直盯著我', () => {ST.d.cold = true; pm({trust: -2}, '你說了一句不該說的話。'); done()}]]});
+    },
+    post: () => ST.d.cold
+      ? [['maggie', '（頓了一下）……好。你自己處理。'], ['sys', 'Maggie 低頭回到螢幕前，沒有再看你一眼。']]
+      : [['maggie', '好。有需要隨時叫我。']],
     after() {pmCast({kai: 'kaiW'})}},
   {seg: 'open', to: 'kp', guide: '去 KP 的辦公室門口，看看發生什麼事',
     ring: ['Kai（業務）', '「KP 那邊你現在馬上過去！客戶那邊出事了！」', '過去看看'],
@@ -319,6 +339,18 @@ STORY.beats = [
         ['sys', '你把規格表送出去。心裡閃過一點不安，但很快就被待辦清單蓋過去了。']]),
     after() {ST.d.day = (ST.d.day || 0) + 1}},
 
+  /* KP 有時兇、有時會鼓勵：看你前面做得怎麼樣 */
+  {seg: 'ret1', to: 'kp', guide: '向 KP 報告：規格確認得怎麼樣',
+    lines: () => ST.d.careful
+      ? [['sys', 'KP 叫住你，手上拿著咖啡，語氣和早上不太一樣。'],
+        ['kp', '我聽 Grace 說，規格是你們一項一項對過的。'],
+        ['kp', '昨天被 Kai 那樣吵，換別人可能早就亂了。你還是先把東西確認清楚，這樣很好。'],
+        ['kp', '繼續。有卡住的地方，直接來講，我不會每次都吼你。']]
+      : [['sys', 'KP 叫住你，臉上沒有笑。'],
+        ['kp', '我聽 Grace 說，你的規格是照 Kai 給的寫的？'],
+        ['kp', 'Kai 是業務，他的工作是賣，不是量電壓。你要自己確認，不要照單全收。'],
+        ['kp', '這種事我不想講第二次。']],
+    after() {ST.d.careful ? pm({trust: 4, energy: 4}, 'KP 難得說了句好話。') : (pmOwe(), pm({trust: -4}))}},
   {seg: 'ret2', when: () => true,
     ring: ['Amy（線材廠）', '「規格我看過了，報價出來了。」', ANSWER],
     lines: () => [['amy', '你好，我是 Amy，線材廠的業務。你們的規格我看過了，這樣的線我們做得出來。'],
@@ -356,10 +388,12 @@ STORY.beats = [
     ring: ['Amy（線材廠）', '「你們的 MOQ 想得怎麼樣了？」', ANSWER],
     lines: () => [['amy', '我是 Amy。你說想談 MOQ，說說看？']],
     mini(done) {
-      say([['amy', '你想怎麼談？']], null, {choice: [
+      const opts = [
         ['MOQ 降到一千條，單價可以提高', () => {ST.d.moq = 'high'; pm({profit: -10}); done()}],
         ['同一款線，請你併另一條產品線的單，湊到兩千條', () => {ST.d.moq = 'share'; pm({profit: -3, trust: 3, energy: -3}); done()}],
-        ['堅持只買八百條，單價不變', () => {ST.d.moq = 'stubborn'; pm({profit: -20, trust: -5}); done()}]]});
+        ['堅持只買八百條，單價不變', () => {ST.d.moq = 'stubborn'; pm({profit: -20, trust: -5}); done()}]];
+      /* 得罪了 Maggie，就沒人告訴你可以併單 */
+      say([['amy', '你想怎麼談？']], null, {choice: ST.d.cold ? [opts[0], opts[2]] : opts});
     },
     post: () => ST.d.moq === 'high'
       ? [['amy', '一千條，單價五十八。這個我可以做主。']]
@@ -483,9 +517,23 @@ STORY.beats = [
       ['maggie', '但錯誤只有在你不再犯的時候，才有價值。來，餅乾。'],
       ['maggie', '寫報告的時候，把「哪一步可以抓到」寫進去。這比道歉有用。']],
     after() {pmCookie()}},
+  {seg: 'ret5', to: 'kp', guide: '向 KP 報告：客戶上線了', when: () => ST.d.result !== 'fail',
+    lines: () => ST.d.result === 'clean'
+      ? [['kp', '客戶的回饋我看了。'], ['kp', '說實話，一開始我以為你撐不過第一個月。'], ['kp', '這次做得很好。從頭到尾每一步都有確認，這就是我要的 PM。']]
+      : ST.d.result === 'lucky'
+        ? [['kp', '客戶上線了。我先說一句：做得不錯。'], ['kp', '但 Grace 說，你沒有實測。這次是你規格寫得好，不是流程保險。下次，測。']]
+        : [['kp', '客戶上線了。'], ['kp', '第一次錯，我是真的生氣。但你自己抓到、自己重做，沒有躲，這一點我記得。'], ['kp', '下次，一次做對。']],
+    after() {pm({trust: ST.d.result === 'clean' ? 8 : 3}, 'KP 的肯定。')}},
   {seg: 'ret5', end: true,
     lines: () => [['sys', ST.d.result === 'fail' ? '線材風波暫時告一段落。但這份報告，你得好好寫。' : '線材風波，到這裡告一段落。客戶上線了，你的手機終於安靜了。']]}
 ];
+
+/* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */
+STORY.beats.forEach(b => {
+  if (b.to === 'maggie' && b.seg !== 'open' || (b.seg === 'open' && b.to === 'maggie' && b.guide.indexOf('回座位') === 0)) {
+    const f = b.lines; b.lines = () => ST.d.cold ? pmM() : f();
+  }
+});
 
 /* 結算卡：照實際發生的事寫 */
 STORY.ending = () => {
@@ -505,13 +553,13 @@ STORY.ending = () => {
       : res === 'lucky' ? '規格是對的，所以這一次沒事。但你沒有實測，下一次不一定這麼幸運。'
       : res === 'redo' ? '第一次的規格沒寫清楚，三週後才在樣品機上發現。你重做了一次，這次每一項都對了。'
       : '規格沒寫清楚，出貨前又沒有實測。錯誤一路送到了客戶現場。',
-    cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾。每一片，都是被罵之後才有的。' : '這一路上，你一片餅乾也沒吃到。'
+    d.cold ? '你一開始就對 Maggie 說了重話。之後不管被罵得多慘，她都沒有拿出餅乾，也沒有再教你什麼。' : cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾。每一片，都是被罵之後才有的。' : '這一路上，你一片餅乾也沒吃到。'
   ];
   return {
     title, led: '線材風波', sub: '第一章結束。從出事到收尾，花了 ' + weeks + ' 個禮拜。',
     more: [pmWho(), '規格：' + spec, '驗證：' + test],
     tl: [['Day 1', '客戶現場出事'], ['Day ' + ((d.rday || 0) + 1), '決定換線'], ['Day ' + (day + 1), '客戶回饋']],
-    stats: [['團隊信任', pmStat('trust')], ['客戶滿意', pmStat('cust')], ['利潤', pmStat('profit')], ['精力', pmStat('energy')], ['餅乾', cookies], ['耗時（週）', weeks]],
+    stats: [['團隊信任', pmStat('trust') + '/100'], ['客戶滿意', pmStat('cust') + '/100'], ['利潤', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['耗時（週）', String(weeks)]],
     lines,
     share: '《PM 的一天》第一章「' + title + '」：' + weeks + ' 週、' + cookies + ' 片餅乾。'
   };

@@ -19,7 +19,7 @@ function ending(){
   prepareCard({name:E.who!=null?E.who:ST.name||'',title,more:E.more||[],led:E.led||'',span:start+' → '+end,
     tl:E.tl||[[start,'開始'],[end,'結束']],rows:(E.stats||[]).slice(0,6).map(r=>[String(r[0]),String(r[1])])});
   $('#endBody').innerHTML=endWrap('<p class="end-k mono">'+end+'</p><h2>'+title+'</h2>'+(E.sub?'<p class="end-sub">'+E.sub+'</p>':'')
-    +(E.stats&&E.stats.length?'<dl class="kv end-stats">'+E.stats.map(r=>'<dt>'+r[0]+'</dt><dd'+(typeof r[1]==='number'?' class="mono"':'')+'>'+r[1]+'</dd>').join('')+'</dl>':'')
+    +(E.stats&&E.stats.length?'<dl class="kv end-stats">'+E.stats.map(r=>'<dt>'+r[0]+'</dt><dd'+(typeof r[1]==='number'?' class="mono"':'')+'>'+String(r[1]).replace(/^([^\/]+)(\/.*)$/,'$1<small class="of">$2</small>')+'</dd>').join('')+'</dl>':'')
     +(E.lines||[]).map(l=>'<p>'+l+'</p>').join('')
     +(ST.name?'<p class="fine">'+esc(ST.name)+'</p>':''));
   const sp=$('#endSupport');if(HOME.support&&HOME.support.url){sp.href=HOME.support.url;sp.textContent=HOME.support.label||'支持作者';sp.hidden=false}else sp.hidden=true;

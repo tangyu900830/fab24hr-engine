@@ -51,7 +51,7 @@ function drawCard(d,shotCv){
     g.fillStyle=INK;g.font='600 68px '+FM;g.fillText(t[0],x,1100);g.fillStyle=MUT;fit(t[1],'500 %px '+FD,296,34,22);g.fillText(t[1],x,1152)});
   /* 數字 */
   d.rows.forEach((r,i)=>{const x=72+(i%2)*480,y=1212+Math.floor(i/2)*112;g.fillStyle='#13212a';g.fillRect(x,y,456,96);g.strokeStyle=LINE;g.lineWidth=2;g.strokeRect(x+1,y+1,454,94);
-    g.fillStyle=MUT;g.font='500 28px '+FD;g.fillText(r[0],x+22,y+38);g.fillStyle=INK;fit(r[1],'700 %px '+FD,412,38,24);g.fillText(r[1],x+22,y+80)});
+    g.fillStyle=MUT;g.font='500 28px '+FD;g.fillText(r[0],x+22,y+38);g.fillStyle=INK;const sl=r[1].indexOf('/');if(sl>0){const a=r[1].slice(0,sl),b=r[1].slice(sl);g.font='700 38px '+FD;g.fillText(a,x+22,y+80);const w=g.measureText(a).width;g.fillStyle=MUT;g.font='500 24px '+FD;g.fillText(b,x+22+w+4,y+80)}else{fit(r[1],'700 %px '+FD,412,38,24);g.fillText(r[1],x+22,y+80)}});
   /* 名稱與網址（放在限動上下工具列蓋不到的範圍裡） */
   const fy=1212+Math.ceil(d.rows.length/2)*112+74;
   const host=SHARE.url.replace(/^https?:\/\//,'');

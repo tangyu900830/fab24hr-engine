@@ -236,3 +236,4 @@ body.at-home .hud,body.at-home .panel,body.at-home .dpad,body.at-home .talk-btn,
 .cardv-body p{margin:0;font-size:13.5px;line-height:1.6;color:var(--muted);align-self:stretch}
 .cardv-foot{flex:none;display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface-2)}
 .cardv-foot .btn{flex:1 1 0;text-align:center;text-decoration:none}
+.end-stats .of{font-size:.7em;opacity:.6;margin-left:2px}
