@@ -26,6 +26,7 @@ function pm(o, note) {
 const pmOwe = () => {ST.d.owed = (ST.d.owed || 0) + 1};
 function pmCookie() {
   if (ST.d.cold) return;
+  if (!ST.d.gv) {ST.d.owed = Math.max(0, (ST.d.owed || 0) - 1); pmBump('energy', 6); toast('鼓勵 +1', '精力回復了一點'); return}
   ST.d.owed = Math.max(0, (ST.d.owed || 0) - 1); ST.d.cookies = (ST.d.cookies || 0) + 1;
   pmBump('energy', 12); toast('餅乾 +1', '精力回復了一點');
 }
@@ -38,6 +39,25 @@ function pmCast(o) {
   Object.assign(base, o);
   Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
 }
+/* Maggie 不會每次都發餅乾：被說了的時候，三次裡只有一次拿出餅乾，其餘是一句鼓勵。
+   做法：包住 Maggie 那件事的 lines，裡面提到餅乾的那幾行，輪到沒有餅乾的時候換成一句鼓勵的話 */
+const PMCOOKW = ['餅乾', '抽屜', '咬了一口', '拿出來', '吃一片', '吃吧'];
+const PMCOOK = {test: t => PMCOOKW.some(w => t.indexOf(w) >= 0)};
+const PMCHEER = ['你比你自己以為的撐得更久。我當 PM 的第二年，比你狼狽多了。', '被說了，不代表你做錯。把能改的記下來，就夠了。',
+  '這件事你處理得比上個月好很多，你自己可能沒發現。', '你剛剛站得住。這比一次做對更難。', '不用每次都做到最好。每次比上一次清楚一點，就是進步。'];
+function pmGiveWrap(b) {
+  const f = b.lines; if (!f) return;
+  b.lines = () => {
+    const L = f(), i = L.findIndex(l => PMCOOK.test(l[1]));
+    if (i < 0) {ST.d.gv = false; return L}
+    const n = ST.d.sc || 0; ST.d.sc = n + 1; ST.d.gv = n % 3 === 0;
+    if (ST.d.gv) return L;
+    const M = L.filter(l => !PMCOOK.test(l[1]));
+    M.splice(Math.min(i, M.length), 0, ['maggie', PMCHEER[n % PMCHEER.length]]);
+    return M;
+  };
+}
+
 /* 得罪了 Maggie：她的每一段話都換成冷淡的一句，也不再給餅乾 */
 function pmM(lines) {
   if (!ST.d.cold) return lines;
@@ -552,7 +572,7 @@ STORY.beats.unshift({seg: 'menu',
 /* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */
 STORY.beats.forEach(b => {
   if (b.to === 'maggie' && b.seg !== 'open' || (b.seg === 'open' && b.to === 'maggie' && b.guide.indexOf('回座位') === 0)) {
-    const f = b.lines; b.lines = () => ST.d.cold ? pmM() : f();
+    pmGiveWrap(b); const f = b.lines; b.lines = () => ST.d.cold ? pmM() : f();
   }
 });
 

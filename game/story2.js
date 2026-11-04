@@ -162,7 +162,7 @@ STORY.beats.push.apply(STORY.beats, [
       ? [['sys', '你花了二十分鐘整理。寄出去的信裡，有三行是重點：依產業排、二十四頁、三週後定稿；渲染圖：' + (ST.d.rend === 'me' ? 'PM 負責協調' : ST.d.rend === 'mk' ? 'Lena 負責提需求、PM 提供規格' : '另行確認') + '。'],
         ['maggie', '不錯。這封信，之後會救你一命。']]
       : [['maggie', '（嘆氣）好吧。但我先說：沒有紀錄的決議，下次就會變成「我沒說過」。']],
-    after() {pmCookie(); ST.d.day = 14; ST.d.pages = 24}},
+    after() {if (ST.d.owed > 0) pmCookie(); ST.d.day = 14; ST.d.pages = 24}},
 
   /* ───────── 三：收集規格 ───────── */
   {seg: 'c2c', to: 'ethan', guide: '找 Ethan，收集各機型最新的規格',
@@ -261,9 +261,8 @@ STORY.beats.push.apply(STORY.beats, [
         ['請 Ian 先做一版出來，再慢慢調', () => {ST.d.brief = 'none'; pm({energy: 2, trust: -3}); done()}]]});
     },
     post: () => ST.d.brief === 'three'
-      ? [['sys', '你約了三個人。Ian 在白板上畫出三個角度，Lena 說明每一張圖用在哪一頁，你把每個機型的尺寸和顏色列出來。'],
-        ['ian', '這樣我才知道要做什麼。一個禮拜，六個機型。'],
-        ['lena', '（看著白板）……原來可以這樣談。我以前都只是丟一句話給他。']]
+      ? [['ian', '三個人一起？好。這樣我才不用猜。大會議室 A，現在就可以。'],
+        ['sys', '你傳了訊息給 Lena。她很快回：「好，我馬上過去。」Ian 抱著筆電站起來，跟你一起往大會議室走。']]
       : ST.d.brief === 'me'
         ? [['sys', '你花了一整個晚上，把六個機型、三種角度、使用情境、用途、期限，全部整理成一份兩頁的 brief。'],
           ['ian', '（看完）清楚。兩個禮拜。'],
@@ -275,7 +274,16 @@ STORY.beats.push.apply(STORY.beats, [
       ST.d.day = 30;
       if (ST.d.brief === 'me') pm({cust: -2});
       if (ST.d.brief === 'none') {pm({trust: -4}); pmOwe()}
+      if (ST.d.brief === 'three' && W) {W.put('lena', 'mt1'); W.put('ian', 'mt3')}   /* 三個人都到大會議室 */
     }},
+  {seg: 'c2e', to: 'meeting', guide: '去大會議室 A，跟 Lena、Ian 一起對 brief', when: () => ST.d.brief === 'three',
+    lines: () => [['sys', '大會議室 A。Lena 和 Ian 已經坐在長桌邊，Lena 的筆電還開著上一版的簡報。'],
+      ['ian', '先說我要的：每一張圖，用在哪一頁、給誰看、要什麼角度、什麼時候要。'],
+      ['lena', '（有點不好意思）我以前都只是說「弄漂亮一點」。'],
+      ['sys', 'Ian 在白板上畫出三個角度，Lena 一一說明每一張圖會放在哪一頁，你把六個機型的尺寸和顏色列出來。'],
+      ['ian', '這樣才叫需求。一個禮拜，六個機型。'],
+      ['lena', '（看著白板）……原來可以這樣談。我之前都只是丟一句話給他。我以後會直接來找你，不再請 PM 轉。']],
+    after() {if (W) {W.walk('lena', 'meetdoor', () => W.put('lena', 'mk2')); W.walk('ian', 'meetdoor', () => W.put('ian', 'id1'))}}},
   {seg: 'c2e', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
     lines: () => [['sys', '你回到座位，覺得今天說的話比做的事還多。'],
       ['maggie', '來，餅乾。'],
@@ -365,6 +373,7 @@ STORY.beats.push.apply(STORY.beats, [
       : 'Kai 還是會打給你，雖然次數少了一點。他說，翻到那一頁的時候，他沒辦法完全相信上面的數字。'],
       ['sys', '型錄案，到這裡告一段落。']]}
 ].map(pm2Ch));
+STORY.beats.forEach(b => {if (b.to === 'maggie' && b.seg.indexOf('c2') === 0) pmGiveWrap(b)});
 
 /* 第二章的結算卡（story.js 的 STORY.ending 到這裡來拿；story.js 不直接用這個檔，載入順序才對） */
 STORY.ending2 = function () {
