@@ -1,19 +1,40 @@
-/* 第三章「新品沒人買」。
-   前半：你負責一台新產品 QX-7（無風扇邊緣運算工控機，規格很強、定價偏高），要跑 EVT → PVT → MP、設計包材、做落摔測試。
-   後半：上市四個月，賣不動。老闆要你說清楚「為什麼沒人買」，找別的領域的業務與新的市場機會，最後向副總 Nora 報告未來規劃。
-   ST.d 記：thermal（散熱方案）、evt（EVT 的問題怎麼處理）、pack（包材）、burn（PVT 老化測試）、presell（預購怎麼回）、cost（每台成本，美元）、
-   frame（報告怎麼寫）、pipe（案子怎麼算）、stock（庫存怎麼處理）、dani（經銷商來電怎麼回）、mkt（新市場）、ref（參考案例）、plan（向副總怎麼報告）、
-   result（up／one／cut）、trust／cust／profit／energy、owed／cookies、day。
+/* 第三章「新品沒人買」（精簡版，約 5–8 分鐘）。
+   前半：QX-7（無風扇邊緣運算工控機）從 EVT、包材落摔、PVT 老化測試做到量產。
+   後半：上市四個月賣不動。找出路、談成案例（含跨產業的額外商機），累計案例、銷售額與淨賺，最後向副總 Nora 報告。
+   ST.d 記：thermal、evt、pack、burn、cost（每台成本）、pipe、stock、dani、mkt、ref、plan、result、
+   deals（談成案例 [[名稱, 台數, 單價], …]）、extra（額外支出，美元）、trust／cust／profit／energy、owed／cookies、day。
    公司、人名、產品名都是虛構的。 */
 
 const pm3Cast = o => pmCast(Object.assign({hank: 'hk', kai: 'kaiD'}, o));
 const pm3Ch = b => {const w = b.when; b.when = () => ST.d.chapter === 3 && (!w || w()); return b};
+const qx7M = n => (n < 0 ? '-' : '') + 'USD ' + Math.abs(Math.round(n)).toLocaleString('en-US');
+const QX7_TOOL = {alu: 80000, mid: 60000, old: 20000};
+function qx7Cost() {
+  const base = {alu: 424, mid: 408, old: 388}[ST.d.thermal || 'mid'];
+  ST.d.cost = base + (ST.d.pack === 'foam' ? 8 : -4) + (ST.d.burn === 'long' ? 3 : 0);
+  return ST.d.cost;
+}
+function qx7Deal(name, units, price) {
+  ST.d.deals = (ST.d.deals || []).concat([[name, units, price]]);
+  toast('談成：' + name, units + ' 台 × USD ' + price + ' ＝ ' + qx7M(units * price));
+}
+function qx7Tot() {
+  const c = ST.d.cost || qx7Cost(), ds = ST.d.deals || [];
+  let units = 0, rev = 0, gp = 0;
+  ds.forEach(d => {units += d[1]; rev += d[1] * d[2]; gp += d[1] * (d[2] - c)});
+  const fixed = (QX7_TOOL[ST.d.thermal || 'mid']) + (ST.d.extra || 0);
+  return {n: ds.length, units, rev, gp, fixed, net: gp - fixed};
+}
+function qx7Score() {
+  const d = ST.d, sc = (d.pipe === 'honest' ? 1 : 0) + (d.dani === 'ask' ? 1 : 0) + (d.mkt === 'retail' ? 2 : d.mkt === 'rail' ? 1 : 0)
+    + (d.ref === 'cond' ? 1 : 0) + (d.plan === 'focus' ? 2 : 0) + (d.cost <= 410 ? 1 : 0) + (d.burn === 'long' ? 1 : 0) + (d.stock === 'bundle' ? 1 : 0);
+  d.score = sc; d.result = sc >= 7 ? 'up' : sc >= 4 ? 'one' : 'cut';
+}
 
-STORY.segs.c3a = {name: '新產品：QX-7', sub: '一台無風扇的邊緣運算工控機。這是你接手後，第一個從零開始的案子。', t: 540, mood: 'day', scene() {pm3Cast({})},
+STORY.segs.c3a = {name: '新產品：QX-7', sub: '一台無風扇的邊緣運算工控機。你第一個從零開始的案子。', t: 540, mood: 'day', scene() {pm3Cast({})},
   note: 'EVT 的目的是找問題，不是證明沒問題。'};
 STORY.segs.c3b = {name: '試產 PVT', sub: '工廠試跑一百台。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm3Cast({})},
   note: '試產的目的，是在量產之前，把流程裡的洞找出來。'};
-STORY.segs.c3c = {name: '量產前', sub: '業務想先收預購。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pm3Cast({})}};
 STORY.segs.c3d = {name: '四個月後', sub: 'QX-7 上市了，但訂單沒有來。', get t() {return pmDay(9, 30)}, mood: 'day', scene() {pm3Cast({})},
   note: '規格很強，不等於有人要買。'};
 STORY.segs.c3e = {name: '找新的出路', sub: '同一台機器，換一個領域，也許就有人要。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pm3Cast({})}};
@@ -21,316 +42,220 @@ STORY.segs.c3f = {name: '向副總報告', sub: '大會議室 A。Nora 只聽重
   scene() {pm3Cast({nora: 'mtw', kp: 'mt2', kai: 'mt3', hank: 'mt1'})}};
 
 STORY.beats.push.apply(STORY.beats, [
-  /* ───────── 一：QX-7 啟動、EVT ───────── */
+  /* 一：啟動、EVT、包材 */
   {seg: 'c3a', to: 'kp', guide: '去 KP 辦公室，聽新案子',
-    lines: () => [['sys', '週一早上，KP 把你叫進辦公室，桌上放著一份一頁的企劃：《QX-7 無風扇邊緣運算工控機》。'],
-      ['kp', 'QX-7。無風扇、可以跑影像辨識的邊緣運算工控機，規格是我們這個等級最強的。老闆很看好，覺得規格這麼強，一定賣得掉。'],
-      ['kp', '這是你第一個從頭到尾自己帶的案子：跟 RD 談規格，跑 EVT、PVT、MP，設計包材，做落摔測試。'],
-      ['kp', '目標成本：每台美金 410 以內。先決定一件事：散熱怎麼做。無風扇，代表熱要靠機殼散出去。']],
+    lines: () => [['kp', 'QX-7。無風扇、能跑影像辨識的工控機，規格是我們這個等級最強的。老闆覺得規格這麼強，一定賣得掉。'],
+      ['kp', '你從頭帶：EVT、PVT、MP、包材、落摔測試。目標成本每台美金 410 以內。先決定散熱怎麼做。']],
     mini(done) {
-      say([['sys', '散熱方案，會決定成本、可靠度，也決定客戶放心不放心。']], null, {choice: [
-        ['全鋁擠型機殼，被動散熱：最貴，但完全沒有風扇，工廠粉塵也不怕', () => {ST.d.thermal = 'alu'; pm({profit: -8, cust: 4}); done()}],
-        ['鋁殼加導熱模組，散熱面積縮小一點，成本中間', () => {ST.d.thermal = 'mid'; pm({profit: -3, trust: 2}); done()}],
-        ['沿用舊機殼，省模具費，散熱靠軟體限速', () => {ST.d.thermal = 'old'; pm({profit: 4, cust: -3}); done()}]]});
+      say([['sys', '無風扇，熱要靠機殼散出去。這會決定成本，也決定客戶放不放心。']], null, {choice: [
+        ['全鋁機殼被動散熱：最貴，工廠粉塵也不怕', () => {ST.d.thermal = 'alu'; pm({profit: -8, cust: 4}); done()}],
+        ['鋁殼加導熱模組：成本中間', () => {ST.d.thermal = 'mid'; pm({profit: -3, trust: 2}); done()}],
+        ['沿用舊機殼，靠軟體限速：最省', () => {ST.d.thermal = 'old'; pm({profit: 4, cust: -3}); done()}]]});
     },
-    post: () => ST.d.thermal === 'alu'
-      ? [['kp', '最貴的方案你選最貴的？（想了一下）……無風扇的賣點，就是可靠。但你要想辦法，在別的地方省回來。']]
-      : ST.d.thermal === 'mid'
-        ? [['kp', '（點頭）先請 Ethan 做熱模擬，再決定。這個順序對。']]
-        : [['kp', '省模具費，我理解。但客戶要的是無風扇「又跑得快」，你靠軟體限速，客戶怎麼看？'], ['kp', '算了，先做。但是客戶如果嫌太燙、太慢，你要負責。']]},
+    post: () => ST.d.thermal === 'old'
+      ? [['kp', '省模具費我理解，但客戶要的是無風扇「又跑得快」。客戶嫌太慢，你要負責。']]
+      : [['kp', ST.d.thermal === 'alu' ? '最貴的方案……無風扇的賣點就是可靠，但你要在別的地方省回來。' : '先請 Ethan 做熱模擬再決定，順序對。']]},
   {seg: 'c3a', to: 'ethan', guide: '找 Ethan，看 EVT 的工程樣品',
-    lines: () => [['sys', '兩週後。EVT 的第一批工程樣品，裝好放在 Ethan 的桌邊，外觀看起來已經很像成品。'],
-      ['ethan', 'EVT 的樣品。先跟你說：EVT 的目的是找問題，不是證明沒問題。我已經找到七個。'],
-      ['ethan', '環境溫度 55 度的時候，處理器會過熱降速；一個網路孔的接頭鬆；電源輸入端子的鎖附螺絲孔位偏了……一條一條在這張表上。']],
+    lines: () => [['ethan', 'EVT 的目的是找問題，不是證明沒問題。我找到七個：55 度會過熱降速、一個網路孔接頭鬆、螺絲孔位偏了……']],
     mini(done) {
-      say([['sys', '七個問題，大小不一。PVT 的時程已經排好了。']], null, {choice: [
-        ['全部列成清單，分輕重，決定哪些在 PVT 之前一定要修', () => {ST.d.evt = 'list'; pm({energy: -6, trust: 4}); done()}],
-        ['只修最明顯的兩個，其他等量產再說，趕時程', () => {ST.d.evt = 'rush'; pm({energy: 2, trust: -2}); done()}]]});
+      say([['sys', '七個問題，PVT 的時程已經排好了。']], null, {choice: [
+        ['全部列清單分輕重，PVT 前必修的先修', () => {ST.d.evt = 'list'; pm({energy: -6, trust: 4}); done()}],
+        ['只修最明顯的兩個，其他等量產再說', () => {ST.d.evt = 'rush'; pm({energy: 2, trust: -2}); done()}]]});
     },
     post: () => ST.d.evt === 'list'
-      ? [['ethan', '（難得露出笑容）清單、分級、期限。這樣我才知道先做哪個。'], ['sys', '一個下午，你和 Ethan 把七個問題排出優先順序，三個 PVT 前必修，其他放進下一版。']]
-      : [['ethan', '（皺眉）……你確定？過熱降速和接頭鬆，量產的時候只會更明顯。'], ['sys', '你點了點頭。時程確實比較寬鬆了，但你心裡有一點不安。']]},
+      ? [['ethan', '清單、分級、期限。這樣我才知道先做哪個。']]
+      : [['ethan', '（皺眉）過熱降速和接頭鬆，量產只會更明顯。']]},
   {seg: 'c3a', to: 'grace', guide: '找 Grace，做包材的落摔測試',
-    lines: () => [['sys', 'Grace 的測試台旁，擺了三種包裝樣品：加厚泡棉內襯、紙漿模塑內襯、最薄的瓦楞紙箱。'],
-      ['grace', '落摔測試：包好的整箱，從 80 公分高，摔六個面、十二次，打開之後，機器不能壞、不能裂。'],
-      ['grace', 'QX-7 是整塊鋁，將近四公斤，棱角又硬。包材要先決定，再來測。']],
+    lines: () => [['grace', '整箱從 80 公分摔六個面、十二次，機器不能壞。QX-7 是整塊鋁，將近四公斤，包材先決定再測。']],
     mini(done) {
-      say([['sys', '三種包裝，各有各的成本和風險。']], null, {choice: [
-        ['加厚泡棉：最安全，但材料貴、體積大', () => {ST.d.pack = 'foam'; pm({profit: -6, energy: 2}); done()}],
-        ['紙漿模塑內襯加護角：成本中等、比較環保，要多測一輪', () => {ST.d.pack = 'pulp'; pm({profit: 2, energy: -5}); done()}],
+      say([['sys', '三種包裝，各有成本和風險。']], null, {choice: [
+        ['加厚泡棉：最安全，但貴又占空間', () => {ST.d.pack = 'foam'; pm({profit: -6, energy: 2}); done()}],
+        ['紙漿模塑加護角：中等成本，要多測一輪', () => {ST.d.pack = 'pulp'; pm({profit: 2, energy: -5}); done()}],
         ['最薄的瓦楞紙箱：最便宜，先過再說', () => {ST.d.pack = 'cheap'; pm({profit: 5, energy: 3}); done()}]]});
     },
     post: () => ST.d.pack === 'foam'
-      ? [['sys', 'Grace 把箱子舉起來，摔下去，六個面、十二次。打開，機殼沒有一點凹痕。'], ['grace', '通過。這包材很穩，只是……很占空間，運費也會高。']]
+      ? [['grace', '通過，很穩。只是很占空間，運費會高。']]
       : ST.d.pack === 'pulp'
-        ? [['sys', '第一輪，紙漿內襯的一個角被摔裂，機殼的一個稜角撞出凹痕。'], ['grace', '護角太薄了。加厚兩毫米，再測一次。'],
-          ['sys', '第二輪，六個面、十二次，全部通過。'], ['grace', '通過。成本比泡棉低，也好回收。']]
-        : [['sys', '第一輪，箱子被摔穿，機殼的稜角整個凹進去，連接頭都歪了。'], ['grace', '不通過。我說過，太薄了。'],
-          ['sys', '你被迫改成紙漿加護角，又測了兩輪才過。比一開始就選對，還花時間。'], ['grace', '最便宜的，通常不是最省的。']],
+        ? [['grace', '第一輪護角太薄，角被摔裂。加厚兩毫米，第二輪通過。']]
+        : [['grace', '箱子被摔穿，機殼凹進去。不通過。你得改成紙漿加護角，又測兩輪。最便宜的，通常不是最省的。']],
     after() {
-      if (ST.d.pack === 'cheap') {pm({energy: -6, trust: -3}); pmOwe(); ST.d.late = (ST.d.late || 0) + 7; ST.d.pack = 'pulp'}   /* 最後還是改成紙漿，只是繞了路 */
+      if (ST.d.pack === 'cheap') {pm({energy: -6, trust: -3}); pmOwe(); ST.d.pack = 'pulp'; ST.d.late = (ST.d.late || 0) + 7}
       ST.d.day = 40;
     }},
-  {seg: 'c3a', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
-    lines: () => [['sys', '你回到座位，看起來有點洩氣。'],
-      ['maggie', '包材被退，很正常。不是丟臉，是把錢花在測試，而不是花在客戶現場。'],
-      ['maggie', '來，餅乾。']],
-    after() {pmCookie()}},
 
-  /* ───────── 二：PVT，去倉庫看老化測試 ───────── */
-  {seg: 'c3b', to: 'warehouse', guide: '去倉庫，看 PVT 試產的老化測試架',
-    lines: () => [['sys', '倉庫的一角，架起了一排老化測試架。PVT 試產的一百台 QX-7，全部通上電，在 50 度的恆溫箱裡跑滿載。'],
-      ['sys', '工廠的人說：標準是跑 72 小時。三天，客戶的出貨就要晚三天。有人建議縮短到 24 小時。']],
+  /* 二：PVT */
+  {seg: 'c3b', to: 'warehouse', guide: '去倉庫，看 PVT 的老化測試架',
+    lines: () => [['sys', '一百台 QX-7 在 50 度恆溫箱裡跑滿載。標準是 72 小時，三天；有人建議縮短到 24 小時。']],
     mini(done) {
-      say([['sys', '老化測試，是在出貨之前，把「早夭」的機器先挑出來。']], null, {choice: [
-        ['照標準跑 72 小時，不良的先挑出來', () => {ST.d.burn = 'long'; pm({energy: -4, trust: 3, profit: -2}); done()}],
+      say([['sys', '老化測試，是在出貨前把「早夭」的機器先挑出來。']], null, {choice: [
+        ['照標準跑 72 小時', () => {ST.d.burn = 'long'; pm({energy: -4, trust: 3, profit: -2}); done()}],
         ['縮短到 24 小時，省時間', () => {ST.d.burn = 'short'; pm({energy: 2, profit: 2}); done()}]]});
     },
-    post: () => ST.d.burn === 'long'
-      ? [['sys', '三天後，一百台裡，有三台在第 50 個小時以後開始重開機。工廠把它們挑出來，換掉了電源模組。'], ['sys', '如果只跑 24 小時，這三台，就會直接出貨。']]
-      : [['sys', '一天後，一百台全部通過。你鬆了一口氣，但是你知道，這個數字，只代表前 24 個小時。']]},
-  {seg: 'c3b', to: 'ethan', guide: '回 Ethan 那裡，看 PVT 的結果',
-    lines: () => [['sys', 'Ethan 把 PVT 的結果攤在桌上。']].concat(ST.d.evt === 'rush'
-      ? [['ethan', 'PVT 一百台，十九台在 55 度的時候降速，七台網路孔接頭鬆。這兩個問題，EVT 的時候就有。'], ['ethan', '要修，要多一週。我提醒過你。']]
-      : [['ethan', 'PVT 一百台，只有兩台的端子不順，其他都過。EVT 的清單，真的有用。'], ['ethan', '兩台的問題我今天修好。MP 可以排。']]),
-    after() {if (ST.d.evt === 'rush') {pm({trust: -4, profit: -4}); pmOwe(); ST.d.late = (ST.d.late || 0) + 7}}},
-  {seg: 'c3b', to: 'kp', guide: '向 KP 報告：PVT 延遲', when: () => ST.d.evt === 'rush',
-    lines: () => [['me', 'KP，PVT 發現過熱降速和網路孔接頭的問題，要多一週修。這是 EVT 就有的問題，我當時沒有修。'],
-      ['kp', '（沉默了一下）……EVT 的時候，Ethan 有提醒，你選了「等量產再說」。'],
-      ['kp', '至少你直接承認了。這一週我來跟老闆說。下一次，EVT 找到的問題，PVT 之前一定要修完。']],
-    after() {pmOwe()}},
-  {seg: 'c3b', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
-    lines: () => [['sys', '你回到座位，覺得頭有點沉。'],
-      ['maggie', '來，餅乾。'],
-      ['maggie', '趕時程的時候，每一次「先不修」，都是借錢，利息比你想像的高。']],
-    after() {pmCookie()}},
+    post: () => (ST.d.burn === 'long'
+      ? [['sys', '一百台裡有三台在第 50 小時以後重開機，被挑出來換了電源模組。如果只跑 24 小時，它們就出貨了。']]
+      : [['sys', '一天後全數通過。但你知道，這只代表前 24 小時。']]).concat(ST.d.evt === 'rush'
+      ? [['ethan', '（傳訊息）PVT 有十九台過熱降速，七台接頭鬆，都是 EVT 就有的問題。修好要多一週。']] : []),
+    after() {
+      if (ST.d.burn === 'short') ST.d.extra = (ST.d.extra || 0) + 12000;      /* 早期出貨的退修費用 */
+      if (ST.d.evt === 'rush') {pm({trust: -4, profit: -4}); pmOwe(); ST.d.late = (ST.d.late || 0) + 7; ST.d.extra = (ST.d.extra || 0) + 8000}
+    }},
 
-  /* ───────── 三、量產前：業務想先收預購 ───────── */
-  {seg: 'c3c', to: 'kai', guide: '找 Kai，他說有客戶想預購',
-    ring: ['Kai（業務）', '「PM，有個客戶想先預購 QX-7，有空嗎？」', '過去看看'],
-    lines: () => [['kai', '不好意思打擾你。有個 SI 看到規格表很心動，問能不能先下預購單，他們下個月要投標。'],
-      ['kai', '他們問：交期可以保證嗎？我想先問你，MP 到底什麼時候會好？']],
-    mini(done) {
-      say([['sys', 'MP 還沒開始，PVT 的問題也才剛修完。這個答覆，會影響交期的承諾。']], null, {choice: [
-        ['直接承諾：下個月底前交貨，先收預購單', () => {ST.d.presell = 'promise'; pm({cust: 5, trust: 2}); done()}],
-        ['先收意向書，標明「預計交期，以 MP 開始後確認為準」', () => {ST.d.presell = 'loi'; pm({trust: 4, cust: 2}); done()}],
-        ['MP 完成、第一批量產確認品質後，再報價收單', () => {ST.d.presell = 'wait'; pm({trust: 1, cust: -3}); done()}]]});
-    },
-    post: () => ST.d.presell === 'promise'
-      ? [['kai', '太好了！我馬上回他！'], ['sys', '你說完才想到：下個月底，其實是樂觀的估算。你沒有告訴 Kai，這個日期還有多少風險。']]
-      : ST.d.presell === 'loi'
-        ? [['kai', '意向書？好，我來擬。這樣客戶有底，我也不會被問「為什麼晚了」。']]
-        : [['kai', '（有點失望）好吧，我跟他說等。但他可能會先去找別人。'], ['me', '寧可晚一點給他確定的日期，也不要給他一個之後要道歉的日期。']]},
-  {seg: 'c3c', to: 'kp', guide: '向 KP 報告：MP 前的成本與時程',
-    lines: () => {
-      const base = {alu: 424, mid: 408, old: 388}[ST.d.thermal || 'mid'];
-      const p = ST.d.pack === 'foam' ? 8 : -4;
-      const b = ST.d.burn === 'long' ? 3 : 0;
-      ST.d.cost = base + p + b;
-      const ok = ST.d.cost <= 410;
-      return [['sys', '你把成本表攤在桌上：機殼、包材、測試。每一項都有數字。'],
-        ['me', '目前每台 USD ' + ST.d.cost + '。散熱用' + ({alu: '全鋁被動散熱', mid: '鋁殼加導熱模組', old: '舊機殼'}[ST.d.thermal || 'mid']) + '，包裝' + (ST.d.pack === 'foam' ? '加厚泡棉' : '紙漿模塑內襯') + '，老化測試' + (ST.d.burn === 'long' ? '跑滿 72 小時' : '縮短為 24 小時') + '。'],
-        ok ? ['kp', '（難得點頭）在目標之內。成本拆得清楚，我放心。MP 排下去。']
-          : ['kp', '超過 410 了。（翻了翻）機殼和包材，哪一塊可以再省？……算了，MP 先排，成本我再回頭追。']];
-    },
-    after() {pm({profit: ST.d.cost <= 410 ? 5 : -4, trust: ST.d.cost <= 410 ? 4 : -2}); ST.d.day = ST.d.day + 40 + (ST.d.late || 0) + 110}},
-
-  /* ───────── 四：四個月後，賣不動 ───────── */
+  /* 三：四個月後 */
   {seg: 'c3d', to: 'kp', guide: '去 KP 辦公室',
     ring: ['KP（主管）', '「進來一下，副總那邊有事。」', '過去看看'],
-    lines: () => [['sys', QX7_STATE_LINE()],
-      ['kp', '副總 Nora 下週要聽 QX-7 的報告。老闆原本覺得規格這麼強，一定賣得掉，結果四個月了，只有兩個專案在詢價，沒有大單。'],
-      ['kp', '我要你寫一份分析。不要寫「賣不好」，我要知道為什麼：誰要買、誰決定買、為什麼不買。'],
-      ST.d.burn === 'short' ? ['kp', '還有，Kai 說有兩台早期出貨的機器，在客戶那邊重開機。老化測試縮短這件事，我有聽說。'] : ['kp', '別把前面的歷史全部往自己身上扛，但也別全推給別人。講事實。']],
-    mini(done) {
-      say([['sys', '這份報告，副總會看，KP 也會看。']], null, {choice: [
-        ['拆成「賣給誰、誰決定買、為什麼不買」三個問題，每一項都附事實和證據', () => {ST.d.frame = 'facts'; pm({trust: 5, energy: -5}); done()}],
-        ['重點寫前期的問題：規格訂得太高、前任定位不清楚', () => {ST.d.frame = 'blame'; pm({trust: -6}); pmOwe(); done()}],
-        ['直接寫解決方案，原因簡單帶過就好', () => {ST.d.frame = 'solution'; pm({trust: -1, energy: 2}); done()}]]});
-    },
-    post: () => ST.d.frame === 'facts'
-      ? [['kp', '（點頭）三個問題，這個切法對。每一項都要有證據，不要「我覺得」。'], ['kp', '寫完先給我看，不要等到副總面前才第一次被我看到。']]
-      : ST.d.frame === 'blame'
-        ? [['kp', '（臉色沉下來）你把責任推給前面的人，副總會怎麼想？她只在意現在要怎麼辦。'], ['kp', '歷史可以寫，但寫在背景裡，不要當主角。重寫。']]
-        : [['kp', '沒有原因的解法，副總一定會問「為什麼這樣做」。你答得出來嗎？'], ['kp', '至少，把原因寫到她問不出為什麼為止。']]},
-  {seg: 'c3d', to: 'maggie', guide: '回座位，跟 Maggie 討論報告怎麼寫',
-    lines: () => (ST.d.owed > 0 ? [['sys', '你回到座位，Maggie 把椅子滑過來。'], ['maggie', '被退稿了？來，餅乾。']] : [['sys', '你回到座位，Maggie 把椅子滑過來。'], ['maggie', '寫報告？我幫你看一下。']]).concat([
-      ['maggie', '規格很強，不等於有人要買。你把一個購買決定拆開看：誰是使用者、誰是決定買的人、誰是簽字付錢的人。'],
-      ['maggie', '工控機這種東西，現場工程師說「好」，採購說「太貴」，IT 說「軟體還沒測」，任何一個說不，這張單就停了。'],
-      ['maggie', '你去找 Kai 問問看，這四個月，每一個詢價的案子，現在卡在誰那裡。']]),
+    lines: () => [['sys', '四個月後。QX-7 已上市，成本每台 USD ' + qx7Cost() + '。' + (ST.d.burn === 'long' ? '老化測試跑滿 72 小時。' : '老化測試縮短成 24 小時，已有兩台早期出貨的機器在客戶那邊重開機。') + '但 Kai 的訂單表上，QX-7 那一欄幾乎是空的。'],
+      ['kp', '副總 Nora 下週要聽報告。我要的不是「賣不好」，是：誰要買、誰決定買、為什麼不買。每一項都要有證據，講事實，別全往自己扛，也別全推給別人。'],
+      ['kp', '這一章會累計你談成的案例和銷售額，最後算出 QX-7 到底賺了多少。']],
+    after() {pm({trust: 2})}},
+  {seg: 'c3d', to: 'maggie', guide: '回座位，跟 Maggie 討論',
+    lines: () => (ST.d.owed > 0 ? [['maggie', '被唸了？來，餅乾。']] : []).concat([
+      ['maggie', '規格很強，不等於有人要買。把購買決定拆開看：現場工程師說好，採購說太貴，IT 說軟體還沒測，任何一個說不，單就停了。'],
+      ['maggie', '去問 Kai，每個詢價的案子，現在卡在誰那裡。']]),
     after() {if (ST.d.owed > 0) pmCookie()}},
   {seg: 'c3d', to: 'kai', guide: '找 Kai，問案子現在的狀況',
-    lines: () => [['kai', '你要問案子？我整理了。（遞給你一張表）展覽收了四十張名片，報過六個案子，真的有專案時程的，只有兩個。'],
-      ['kai', '其他四個，客戶說「規格很棒，我們再看看」，然後就沒下文。我也不知道，要怎麼算。']],
+    lines: () => [['kai', '展覽收了四十張名片，報過六個案子，真的有專案時程的只有兩個。其他客戶說「規格很棒，我們再看看」，然後就沒下文。']],
     mini(done) {
-      say([['sys', '表上六個案子。哪些是真的有機會，哪些只是客氣？']], null, {choice: [
-        ['一個一個問清楚：誰決定買、預算在哪、什麼時候要，現在卡在哪', () => {ST.d.pipe = 'honest'; pm({energy: -6, trust: 4}); done()}],
-        ['六個都算進預測，報告上的數字比較好看', () => {ST.d.pipe = 'inflate'; pm({trust: -3}); done()}]]});
+      say([['sys', '六個案子，哪些是真的有機會？']], null, {choice: [
+        ['一個一個問：誰決定買、預算在哪、卡在哪', () => {ST.d.pipe = 'honest'; pm({energy: -6, trust: 4}); done()}],
+        ['六個都算進預測，數字比較好看', () => {ST.d.pipe = 'inflate'; pm({trust: -3}); done()}]]});
     },
     post: () => ST.d.pipe === 'honest'
-      ? [['kai', '你要一個一個問？我可以幫你約。'], ['sys', '你和 Kai 花了兩天，把六個案子問了一遍。結果：一個卡在採購說太貴，一個卡在客戶的 IT 要先測試軟體，兩個其實是用舊機型就夠，另外兩個才是真的在等 QX-7。'],
-        ['kai', '這樣我才知道，卡在哪，要找誰。']]
-      : [['kai', '（有點猶豫）……六個都算進去？這樣數字是好看啦，可是副總要是問起來……'], ['sys', '你把六個案子都填進去，數字很漂亮。你心裡，有一點虛。']]},
+      ? [['sys', '兩天問完：兩個用舊機型就夠，一個卡採購，一個卡客戶 IT 測試，另外兩個真的在等 QX-7。你和 Kai 針對這兩個把問題解掉。']]
+      : [['sys', '你把六個都填進去，數字漂亮，但沒有人真的跟進。只有一個本來就要買的客戶被順利帶成單。']],
+    after() {
+      if (ST.d.pipe === 'honest') {qx7Deal('工廠外觀檢測 SI', 120, 620); qx7Deal('電子代工廠產線', 80, 600)}
+      else qx7Deal('工廠外觀檢測 SI', 60, 560);
+    }},
   {seg: 'c3d', to: 'warehouse', guide: '去倉庫，看 QX-7 的庫存',
-    lines: () => [['sys', '倉庫的層架上，QX-7 的紙箱一箱一箱疊著：量產的第一批，六百台。']].concat(ST.d.burn === 'short' ? [['sys', '其中有兩個箱子貼著紅色的「退貨待檢」標籤。']] : []).concat([
-      ['sys', '你算了一下：賣掉的，只有九十台。每放一個月，這批庫存要付倉儲費，也在佔用資金。']]),
+    lines: () => [['sys', '層架上疊著量產第一批的六百台。賣掉的只有九十台，每放一個月都在付倉儲費、佔用資金。']].concat(ST.d.burn === 'short' ? [['sys', '兩個箱子貼著紅色的「退貨待檢」標籤。']] : []),
     mini(done) {
-      say([['sys', '六百台，不能一直放著。有三種處理方式。']], null, {choice: [
-        ['搭配舊機型一起賣，做一個「升級組合」，讓客戶用比較低的價格試 QX-7', () => {ST.d.stock = 'bundle'; pm({profit: -2, cust: 4, energy: -3}); done()}],
-        ['直接降價，把庫存清掉', () => {ST.d.stock = 'cut'; pm({profit: -8, cust: 2}); done()}],
+      say([['sys', '六百台不能一直放著。']], null, {choice: [
+        ['搭配舊機型做「升級組合」，低價讓客戶試用', () => {ST.d.stock = 'bundle'; pm({profit: -2, cust: 4, energy: -3}); done()}],
+        ['直接降價清庫存', () => {ST.d.stock = 'cut'; pm({profit: -8, cust: 2}); done()}],
         ['先不處理，等市場自己起來', () => {ST.d.stock = 'wait'; pm({profit: -3}); done()}]]});
     },
     post: () => ST.d.stock === 'bundle'
-      ? [['sys', '你想出一個「舊機型加 QX-7 升級組合」，客戶可以先拿一台舊機型的價格，試用 QX-7 一個月。Kai 聽到的時候，眼睛亮了一下。']]
+      ? [['sys', 'Kai 聽到「舊機型加 QX-7 升級組合」，眼睛亮了一下，當週就簽了一批。']]
       : ST.d.stock === 'cut'
-        ? [['sys', '你把價格砍了兩成。庫存動了一點，但客戶開始問：「是不是之後還會降？」']]
-        : [['sys', '你什麼都沒做。倉庫的燈，一個月後還是亮著。']]},
+        ? [['sys', '價格砍兩成，庫存動了，但客戶開始問「是不是之後還會降」。']]
+        : [['sys', '你什麼都沒做。一個月後，倉庫的燈還是亮著。']],
+    after() {
+      if (ST.d.stock === 'bundle') qx7Deal('舊機型升級組合', 150, 520);
+      else if (ST.d.stock === 'cut') qx7Deal('庫存清貨', 200, 470);
+    }},
   {seg: 'c3d',
     ring: ['Dani（海外經銷商）', '「Hi，我想跟你聊聊 QX-7～」', ANSWER],
-    lines: () => [['dani', '嗨，我是 Dani。QX-7 的規格我們都看過了，客戶的反應是：規格很強，不過……不知道拿來做什麼。'],
-      ['dani', '價格也比他們現在用的機型貴了四成。他們還想問，有沒有可以參考的案子，別的客戶用在哪裡？'],
-      ['dani', '還有一個地方客戶在問：這台有沒有車載的認證？有些案子，沒有認證，連投標都不行。']],
+    lines: () => [['dani', '客戶說規格很強，但不知道拿來做什麼，價格比現在用的貴四成。還有，車載和軌道的案子沒有認證，連投標都不行。']],
     mini(done) {
-      say([['dani', '所以，你們打算怎麼辦？']], null, {choice: [
-        ['請他告訴我：客戶的應用場景、預算範圍、需要哪些認證和參考案例', () => {ST.d.dani = 'ask'; pm({trust: 3, cust: 5, energy: -3}); done()}],
-        ['當場答應：認證我們會補，價格也可以降', () => {ST.d.dani = 'promise'; pm({cust: 4, profit: -8, trust: -3}); done()}],
-        ['謝謝他的回饋，等他再通知', () => {ST.d.dani = 'thanks'; pm({cust: -3}); done()}]]});
+      say([['dani', '你們打算怎麼辦？']], null, {choice: [
+        ['請他告訴我：應用場景、預算、需要哪些認證', () => {ST.d.dani = 'ask'; pm({trust: 3, cust: 5, energy: -3}); done()}],
+        ['當場答應：認證會補，價格也可以降', () => {ST.d.dani = 'promise'; pm({cust: 4, profit: -8, trust: -3}); done()}],
+        ['謝謝回饋，等他再通知', () => {ST.d.dani = 'thanks'; pm({cust: -3}); done()}]]});
     },
     post: () => ST.d.dani === 'ask'
-      ? [['dani', '好，我整理一份給你。有三個應用場景在問：工廠外觀檢測、零售店的影像分析、還有一個是軌道旁的設備箱。每個的預算、認證需求，我會附上。'],
-        ['dani', '你問的這些，比我之前遇過的原廠都清楚。']]
+      ? [['dani', '我整理三個場景給你：工廠檢測、零售店影像分析、軌道旁設備箱，預算和認證需求都附上。你問得比其他原廠清楚。']]
       : ST.d.dani === 'promise'
-        ? [['dani', '真的嗎？太好了！我跟客戶說，認證會補、價格會調整。'], ['sys', '掛了電話，你才想到：認證要花多久、多少錢？降價，KP 同意嗎？你什麼都還沒確認。']]
-        : [['dani', '……好吧，那我等你通知。'], ['sys', '掛了電話，你知道你錯過了一個，可以問清楚的機會。']],
-    after() {if (ST.d.dani === 'promise') pmOwe(); ST.d.day = ST.d.day + 7}},
+        ? [['sys', '掛了電話你才想到：認證要多久、多少錢？降價 KP 同意嗎？你什麼都沒確認。']]
+        : [['sys', '掛了電話，你知道你錯過了一個可以問清楚的機會。']],
+    after() {
+      if (ST.d.dani === 'ask') qx7Deal('海外經銷商首批', 60, 580);
+      if (ST.d.dani === 'promise') {qx7Deal('海外經銷商首批（降價）', 60, 480); pmOwe(); ST.d.extra = (ST.d.extra || 0) + 15000}
+      ST.d.day = ST.d.day + 150;
+    }},
 
-  /* ───────── 五：找新的出路 ───────── */
+  /* 四：新出路（跨產業） */
   {seg: 'c3e', to: 'hank', guide: '找 Hank，聽他說他的客戶',
-    lines: () => [['sys', 'Maggie 建議你去找別的領域的業務。Hank 負責智慧零售與交通的專案，辦公桌離你不遠。'],
-      ['hank', '你就是 QX-7 的 PM？我聽說了！我的零售客戶，一直在問有沒有可以放在店裡跑影像分析的小型機器，要安靜、不能有風扇聲。你們的無風扇，剛好符合。'],
-      ['hank', '另外，交通那邊有幾個案子，設備箱放在路邊，也需要無風扇、耐高溫。不過要有軌道和車載的認證，那個要花時間和錢。'],
-      ['hank', '我可以帶你去見幾個客戶，我們一起推。你推機器，我推我的案子。']],
+    lines: () => [['hank', '我做智慧零售和交通。零售客戶一直在找能放在店裡跑影像分析、不能有風扇聲的小機器，你們的無風扇剛好。交通那邊的設備箱也需要耐高溫，不過要有認證，很花時間和錢。']],
     mini(done) {
-      say([['sys', 'QX-7 本來是給工廠用的。現在有三個出口。']], null, {choice: [
-        ['跟 Hank 合作，進入智慧零售：價格敏感，但不需要特別的認證，量也比較大', () => {ST.d.mkt = 'retail'; pm({cust: 8, trust: 4, energy: -4}); done()}],
-        ['去軌道與車載：單價高、規格好，但要先花時間和錢做認證，週期很長', () => {ST.d.mkt = 'rail'; pm({cust: 3, profit: 3, energy: -6}); done()}],
-        ['繼續留在原本的工廠視覺檢測市場，加大推廣', () => {ST.d.mkt = 'same'; pm({cust: -3, profit: -3}); done()}]]});
+      say([['sys', 'QX-7 本來給工廠用，現在有三個出口。']], null, {choice: [
+        ['跟 Hank 進智慧零售：價格敏感，不用特別認證，量大', () => {ST.d.mkt = 'retail'; pm({cust: 8, trust: 4, energy: -4}); done()}],
+        ['去軌道與車載：單價高，但要先做認證，週期長', () => {ST.d.mkt = 'rail'; pm({cust: 3, profit: 3, energy: -6}); done()}],
+        ['留在工廠視覺檢測，加大推廣', () => {ST.d.mkt = 'same'; pm({cust: -3, profit: -3}); done()}]]});
     },
     post: () => ST.d.mkt === 'retail'
-      ? [['hank', '太好了！我們每個月有一場零售客戶的聚會，你可以去擺一台，順便收需求。'], ['sys', 'Hank 當場就把你加進了他的客戶群組。']]
+      ? [['hank', '每個月有零售客戶聚會，你擺一台，順便收需求！'], ['sys', '兩週後，一家連鎖賣場下了單，這是 QX-7 第一個跨產業的案子。']]
       : ST.d.mkt === 'rail'
-        ? [['hank', '軌道那邊，認證要一年，我自己也沒走完過……不過你可以試試。'], ['sys', '你走回座位，心裡想：這條路，沒有人帶，要自己闖。']]
-        : [['hank', '（想了想）……好吧，如果你覺得原本的市場還有空間。需要的話，隨時來找我。']]},
+        ? [['hank', '認證要一年，我自己也沒走完過……不過你可以試試。'], ['sys', '認證花了一筆錢。先拿到一個小量的設備箱訂單，更大的要等認證下來。']]
+        : [['hank', '好吧，需要的話隨時來找我。']],
+    after() {
+      if (ST.d.mkt === 'retail') qx7Deal('智慧零售連鎖賣場（跨產業）', 200, 540);
+      if (ST.d.mkt === 'rail') {qx7Deal('軌道設備箱小量案（跨產業）', 30, 880); ST.d.extra = (ST.d.extra || 0) + 50000}
+    }},
   {seg: 'c3e', to: 'kai', guide: '跟 Kai 談：找一個願意當參考案例的客戶',
-    lines: () => [['sys', '你把 Dani 的話告訴 Kai：客戶不是不喜歡 QX-7，而是不知道拿來做什麼，也沒有人用過。'],
-      ['kai', '參考案例？那要有一個客戶，願意讓我們說：「他們用 QX-7 做了什麼」。這種客戶，很難找，也很怕被當白老鼠。']],
+    lines: () => [['kai', '客戶不是不喜歡 QX-7，是沒人用過。參考案例很難找，客戶很怕被當白老鼠。']],
     mini(done) {
-      say([['kai', '那你想怎麼做？']], null, {choice: [
-        ['找一個真的有需求的客戶，雙方簽好：試用期、驗收標準、成功後可以公開成參考案例', () => {ST.d.ref = 'cond'; pm({trust: 4, cust: 4, energy: -3}); done()}],
-        ['多找幾個客戶，每一家都給大折扣，先把量衝起來', () => {ST.d.ref = 'discount'; pm({cust: 2, profit: -6}); done()}]]});
+      say([['kai', '你想怎麼做？']], null, {choice: [
+        ['找一個真有需求的客戶，簽好試用期、驗收標準、成功後可公開', () => {ST.d.ref = 'cond'; pm({trust: 4, cust: 4, energy: -3}); done()}],
+        ['多找幾家，每家都給大折扣，先把量衝起來', () => {ST.d.ref = 'discount'; pm({cust: 2, profit: -6}); done()}]]});
     },
     post: () => ST.d.ref === 'cond'
-      ? [['kai', '這樣好！有驗收標準，客戶不用怕，我也不用怕。'], ['sys', '你做了一頁的合作說明：試用期六週、驗收三個指標、成功之後同意公開。Kai 看完說：「我知道誰會答應了。」']]
-      : [['kai', '好吧……你決定。'], ['sys', '你報了三家折扣，每一家都有，但你沒有跟任何一家約好，之後可不可以說出他們的名字。']],
-    after() {ST.d.day = ST.d.day + 14}},
+      ? [['kai', '有驗收標準，客戶不用怕，我也不用怕。我知道誰會答應了。']]
+      : [['kai', '好吧，你決定。']],
+    after() {
+      if (ST.d.ref === 'cond') qx7Deal('參考案例客戶', 100, 600);
+      else qx7Deal('多家小額折扣客戶', 60, 450);
+    }},
   {seg: 'c3e', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0,
-    lines: () => [['sys', '你回到座位，覺得有點喘不過氣。'],
-      ['maggie', '來，餅乾。'],
-      ['maggie', '一個人的事，不要一個人扛。你已經找 Hank 了，這一步很對。']],
+    lines: () => [['maggie', '來，餅乾。一個人的事，不要一個人扛，你找 Hank 這一步很對。']],
     after() {pmCookie()}},
 
-  /* ───────── 六：向副總報告 ───────── */
+  /* 五：向副總報告 */
   {seg: 'c3f', to: 'meeting', guide: '去大會議室 A，向副總報告',
     ring: ['Nora（副總）', '「我在大會議室 A 了。準備好就來。」', '過去看看'],
-    lines: () => [['sys', '大會議室 A。Nora 坐在長桌的一端，KP 坐在旁邊，Kai 和 Hank 也在。她面前什麼都沒有，只有一支筆。'],
-      ['nora', '我只看重點，只問數字。QX-7 為什麼賣不動？你打算怎麼辦？']],
+    lines: () => {const t = qx7Tot();
+      return [['nora', '我只看重點，只問數字。QX-7 到現在談成 ' + t.n + ' 個案子、' + t.units + ' 台、銷售額 ' + qx7M(t.rev) + '。為什麼一開始賣不動？接下來怎麼辦？']]},
     mini(done) {
-      say([['sys', '所有人都看著你。你的簡報已經準備好了。']], null, {choice: [
-        ['先講事實（賣給誰、誰決定買、為什麼不買），再講聚焦一個領域的四個月驗證計畫，每個月有指標', () => {ST.d.plan = 'focus'; pm({trust: 8}); done()}],
-        ['只講好消息：規格最強、客戶反應很好、只是還要時間', () => {ST.d.plan = 'good'; pm({trust: -6}); done()}],
-        ['直接要求更多預算：加大推廣，一定能賣起來', () => {ST.d.plan = 'budget'; pm({trust: -4, profit: -6}); done()}]]});
+      say([['sys', '所有人都看著你。']], null, {choice: [
+        ['先講事實（賣給誰、誰決定買、為什麼不買），再講聚焦一個領域的四個月驗證計畫，每月有指標', () => {ST.d.plan = 'focus'; pm({trust: 8}); qx7Score(); done()}],
+        ['只講好消息：規格最強、反應很好、只是還要時間', () => {ST.d.plan = 'good'; pm({trust: -6}); qx7Score(); done()}],
+        ['要求更多預算：加大推廣，一定能賣起來', () => {ST.d.plan = 'budget'; pm({trust: -4, profit: -6}); qx7Score(); done()}]]});
     },
-    post: () => ST.d.plan === 'focus'
-      ? [['me', '先講事實：這四個月，展覽收了四十張名片、報了六個案子，' + (ST.d.pipe === 'honest' ? '一個一個問過：兩個是真的在等，兩個用舊機型就夠，一個卡在採購，一個卡在客戶的 IT 測試' : '全部算進預測，但真的有專案時程的，只有兩個') + '。'],
-        ['me', '所以計畫是：不撒網，只聚焦一個領域，用四個月驗證。第一個月，找參考案例客戶；第二個月，完成試用；第三個月，把結果變成案例；第四個月，用案例去談下一批。每個月都有指標。'],
-        ['nora', '（記了幾筆）嗯。有事實，有聚焦，有時間，有指標。']]
-      : ST.d.plan === 'good'
-        ? [['me', '客戶的反應都很正面，規格是同級最強，只是還需要時間，我們有六個案子在談。'],
-          ['nora', '六個？其中有幾個有預算？幾個有時程？幾個在等我們的認證？'],
-          ST.d.pipe === 'honest' ? ['me', '……真正在等的，是兩個。'] : ['me', '……我們還在追蹤。'],
-          ['nora', '好消息我聽得出來。我要的是你知道的，不是你希望的。']]
-        : [['me', '我認為，只要加大推廣預算，一定能把量帶起來。'],
-          ['nora', '加多少？預期帶來多少訂單？你的依據是什麼？'],
-          ['me', '……'],
-          ['nora', '預算不是答案，除非你告訴我它會變成什麼。']]},
-  {seg: 'c3f', to: 'meeting', guide: '回答副總的追問',
-    lines: () => [['nora', '兩個問題。第一，你說要進' + ({retail: '智慧零售', rail: '軌道與車載', same: '原本的工廠視覺檢測'}[ST.d.mkt || 'same']) + '，為什麼是那裡？第二，這件事，不是你一個人能做的，你找了誰？'],
-      ST.d.mkt === 'retail'
-        ? ['me', '零售客戶要的是安靜、不能有風扇聲、放得進小空間，QX-7 的無風扇設計正好符合，也不需要特別的認證。Hank 的客戶重疊，我們一起去推，他說每個月有一場客戶聚會，可以擺一台。']
-        : ST.d.mkt === 'rail'
-          ? ['me', '軌道和車載單價高、規格好，但是要先做認證，大概要一年。目前我還沒有一個走過認證的人可以帶路。']
-          : ['me', '……原本的工廠市場，我們還有空間。']],
-    mini(done) {
-      const sc = (ST.d.frame === 'facts' ? 1 : 0) + (ST.d.pipe === 'honest' ? 1 : 0) + (ST.d.dani === 'ask' ? 1 : 0) + (ST.d.mkt === 'retail' ? 2 : ST.d.mkt === 'rail' ? 1 : 0)
-        + (ST.d.ref === 'cond' ? 1 : 0) + (ST.d.plan === 'focus' ? 2 : 0) + (ST.d.cost <= 410 ? 1 : 0) + (ST.d.burn === 'long' ? 1 : 0) + (ST.d.stock === 'bundle' ? 1 : 0);
-      ST.d.score = sc; ST.d.result = sc >= 8 ? 'up' : sc >= 4 ? 'one' : 'cut';
-      done();
+    post: () => {
+      const t = qx7Tot();
+      return (ST.d.plan === 'focus'
+        ? [['nora', '有事實，有聚焦，有時間，有指標。']]
+        : ST.d.plan === 'good'
+          ? [['nora', '好消息我聽得出來。我要的是你知道的，不是你希望的。']]
+          : [['nora', '預算不是答案，除非你告訴我它會變成什麼。']]
+      ).concat([['nora', '毛利 ' + qx7M(t.gp) + '，扣掉開模、認證與退修等 ' + qx7M(t.fixed) + '，QX-7 目前淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。']],
+        ST.d.result === 'up'
+          ? [['nora', '這個產品我不砍。給你四個月，成本降到 USD 390 以下，參考案例要簽下來。']]
+          : ST.d.result === 'one'
+            ? [['nora', '再給你一季。如果一季之後，參考案例、報價、下單還是零，我們談要不要停。']]
+            : [['nora', '以現在的資料，我沒辦法說服自己繼續投資。先暫停推廣預算，庫存由 Kai 看有沒有客戶要。']]);
     },
-    post: () => ST.d.result === 'up'
-      ? [['nora', '（放下筆）我聽到了。這個產品，我不砍。'],
-        ['nora', '給你四個月。條件：第一，一個參考案例客戶要簽下來；第二，跟 Hank 的合作，我要每個月看一次進度；第三，成本，要降到 USD 390 以下。'],
-        ['nora', 'Kai，你配合他。KP，你定期跟我報。']]
-      : ST.d.result === 'one'
-        ? [['nora', '再給你一季。但我要看到數字：參考案例幾個、報價幾張、下單幾張。'],
-          ['nora', '如果一季之後，這三個數字還是零，我們就談要不要停。'],
-          ['kp', '（對 Nora）我會盯。']]
-        : [['nora', '以現在的資料，我沒辦法說服自己繼續投資。'],
-          ['nora', '先暫停推廣預算，現有庫存，由 Kai 看有沒有客戶要。三個月後，我們再看。'],
-          ['kp', '（沉默了很久）……我會把後續處理的方案給你。']],
     after() {if (ST.d.result === 'cut') pmOwe(); ST.d.day = ST.d.day + 5}},
   {seg: 'c3f', to: 'kp', guide: '向 KP 回報',
     lines: () => ST.d.result === 'up'
-      ? [['kp', '副總說給你四個月。我很久沒看過她這樣說了。'], ['kp', '你今天沒有躲，也沒有裝。這是我最想看到的。去吧，四個月，我幫你擋。']]
+      ? [['kp', '副總說給你四個月，我很久沒看過她這樣說了。你今天沒有躲，也沒有裝，這是我最想看到的。']]
       : ST.d.result === 'one'
-        ? [['kp', '還有一季。比我想的好，也比我希望的差。'], ['kp', '你的報告，有幾個地方站得住，有幾個地方，她一問你就說不出口。這就是你這一季要補的地方。']]
-        : [['kp', '（把筆放下）這個結果，我不意外，也不好受。'], ['kp', '但你今天說的，是事實。如果之後這個產品能活下來，是因為你把事實擺在桌上，而不是因為你把事實藏起來。']]},
+        ? [['kp', '比我想的好，也比我希望的差。她一問你就說不出口的地方，就是這一季要補的。']]
+        : [['kp', '這個結果我不意外，也不好受。但你今天說的是事實，產品之後能不能活下來，要靠這個。']]},
   {seg: 'c3f', to: 'maggie', guide: '回座位', when: () => ST.d.owed > 0 || ST.d.result === 'cut',
-    lines: () => [['sys', '你回到座位，一個人坐了很久。'],
-      ['maggie', '來，餅乾。'],
-      ['maggie', '不管結果怎樣，你今天站在副總面前，把整件事講完了。這件事，很多人做不到。']],
+    lines: () => [['maggie', '來，餅乾。不管結果怎樣，你今天站在副總面前，把整件事講完了，很多人做不到。']],
     after() {pmCookie()}},
   {seg: 'c3f', end: true,
-    lines: () => [['sys', ST.d.result === 'up'
-      ? '四個月的倒數開始了。你的桌上多了一張清單：一個參考案例、每月進度、成本 USD 390。'
-      : ST.d.result === 'one' ? '一季的時間。清單上，三個數字都還是零。'
-        : '推廣預算暫停，QX-7 靜靜地放在倉庫裡。這一章，到這裡結束。'],
+    lines: () => [['sys', ST.d.result === 'up' ? '四個月的倒數開始了。' : ST.d.result === 'one' ? '一季的時間，清單上的數字都還是零。' : 'QX-7 靜靜地放在倉庫裡。'],
       ['sys', 'QX-7 的第一個故事，到這裡告一段落。']]}
 ].map(pm3Ch));
 STORY.beats.forEach(b => {if (b.to === 'maggie' && b.seg.indexOf('c3') === 0) pmGiveWrap(b)});
 
-function QX7_STATE_LINE() {
-  const b = {long: '你記得，PVT 的老化測試，跑滿了 72 小時。', short: '你記得，PVT 的老化測試，你縮短成 24 小時。'}[ST.d.burn || 'long'];
-  return '四個月後。QX-7 已經上市，成本每台 USD ' + (ST.d.cost || 410) + '。' + b + '但 Kai 的訂單表上，QX-7 那一欄，幾乎是空的。';
-}
-
 /* 第三章的結算卡 */
 STORY.ending3 = function () {
-  const d = ST.d, day = d.day || 0, weeks = Math.max(1, Math.ceil(day / 7)), cookies = d.cookies || 0, r = d.result || 'cut';
-  const title = r === 'up' ? '把事實擺在桌上，換到四個月' : r === 'one' ? '還有一季' : '事實擺出來了，數字還沒';
-  const lines = [
-    d.burn === 'long' ? '你去倉庫看了老化測試，堅持跑滿 72 小時，三台早夭的機器沒有出貨。' : '你縮短了老化測試，早期出貨的機器，有兩台在客戶那邊重開機。',
-    d.pack === 'foam' ? '你選了加厚泡棉，機器很安全，但成本和運費都高。' : '你選了紙漿模塑加護角，多測了一輪，成本比較低，也好回收。',
-    d.presell === 'promise' ? '你答應客戶預購的交期，沒有留下餘地。' : d.presell === 'loi' ? '你先收意向書，交期留了餘地。' : '你等 MP 完成才報價，沒有被交期綁住，也少了一點聲量。',
-    d.pipe === 'honest' ? '詢價的案子，你一個一個問清楚，卡在誰那裡，你都看得見。' : '你把所有案子都算進了預測，數字很好看。',
-    d.mkt === 'retail' ? '你和 Hank 一起，把 QX-7 帶進了智慧零售。' : d.mkt === 'rail' ? '你選了軌道與車載這條路，沒有人帶，認證要花一年。' : '你留在原本的工廠市場，沒有找新的出口。',
+  const d = ST.d, day = d.day || 0, weeks = Math.max(1, Math.ceil(day / 7)), cookies = d.cookies || 0, r = d.result || 'cut', t = qx7Tot();
+  const title = t.net >= 0 ? 'QX-7 淨賺 ' + qx7M(t.net) : 'QX-7 還沒回本';
+  const lines = (d.deals || []).map(x => '談成：' + x[0] + '，' + x[1] + ' 台 × USD ' + x[2] + ' ＝ ' + qx7M(x[1] * x[2])).concat([
+    '銷售額 ' + qx7M(t.rev) + '，毛利 ' + qx7M(t.gp) + '，扣掉開模、認證、退修 ' + qx7M(t.fixed) + '，淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。',
+    d.burn === 'long' ? '老化測試跑滿 72 小時，早夭的機器沒有出貨。' : '老化測試縮短，早期出貨的機器在客戶那邊重開機。',
+    d.mkt === 'retail' ? '你和 Hank 把 QX-7 帶進了智慧零售，這是額外的跨產業商機。' : d.mkt === 'rail' ? '你走軌道與車載，認證花了一筆錢。' : '你留在原本的工廠市場，沒有跨產業的案子。',
     d.cold ? '' : cookies ? '這一路上，你吃了 ' + cookies + ' 片餅乾。' : '這一路上，你一片餅乾也沒吃到。'
-  ].filter(Boolean);
+  ]).filter(Boolean);
   return {
     title, led: '新品沒人買', sub: '第三章結束。從 EVT 到向副總報告，花了 ' + weeks + ' 個禮拜。',
-    more: ['成本 USD ' + (d.cost || 410) + ' / 台', ({up: '副總：給四個月', one: '副總：再給一季', cut: '副總：暫停推廣'})[r], '報告：' + ({facts: '三個問題的事實', blame: '偏重前期的問題', solution: '直接寫解決方案'})[d.frame || 'solution']],
-    tl: [['Day 1', 'QX-7 啟動'], ['Day ' + Math.max(1, Math.round(day * .45)), 'MP'], ['Day ' + (day + 1), '向副總報告']],
-    stats: [['團隊信任', pmStat('trust') + '/100'], ['市場信心', pmStat('cust') + '/100'], ['成本控制', pmStat('profit') + '/100'], ['精力', pmStat('energy') + '/100'], ['餅乾', String(cookies)], ['單台成本', 'USD ' + (d.cost || 410)]],
+    more: [t.n + ' 個案子 · ' + t.units + ' 台', ({up: '副總：給四個月', one: '副總：再給一季', cut: '副總：暫停推廣'})[r], '單台成本 USD ' + (d.cost || 410)],
+    tl: [['Day 1', 'QX-7 啟動'], ['Day ' + Math.max(1, Math.round(day * .3)), 'MP'], ['Day ' + (day + 1), '向副總報告']],
+    stats: [['談成案例', String(t.n)], ['銷售額', qx7M(t.rev)], ['淨賺', qx7M(t.net)], ['團隊信任', pmStat('trust') + '/100'], ['市場信心', pmStat('cust') + '/100'], ['餅乾', String(cookies)]],
     lines,
-    share: '《PM 的一天》第三章「' + title + '」：' + weeks + ' 週、' + cookies + ' 片餅乾。'
+    share: '《PM 的一天》第三章：談成 ' + t.n + ' 個案子、銷售額 ' + qx7M(t.rev) + '，淨' + (t.net >= 0 ? '賺 ' : '虧 ') + qx7M(Math.abs(t.net)) + '。'
   };
 };
