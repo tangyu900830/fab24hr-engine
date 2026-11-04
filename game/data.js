@@ -28,7 +28,7 @@ STORY.cast = {
   zoe: {name: 'Zoe', role: '行銷專員', tag: 'Zoe', color: '#e0803a', about: '行銷部的設計與排版。喜歡用「情境」和「故事」講產品，也喜歡在會議裡補充「我覺得還可以…」。'},
   ian: {name: 'Ian', role: 'ID（工業設計師）', tag: 'ID', color: '#b8892a', about: '產品外觀的設計師，也是渲染圖的人。一個人服務三個部門，要什麼先寫清楚，他才開始動。'},
   nora: {name: 'Nora', role: '副總', tag: 'VP', color: '#6b4f9a', about: '管整個產品事業群。一個問題問到底：「所以呢？數字在哪裡？下一步是什麼？」不喜歡聽藉口，也不討厭壞消息，只要你講得清楚。'},
-  hank: {name: 'Hank', role: '倉儲自動化產品線 PM', tag: 'PM', color: '#2f7f9a', about: '另一條產品線的 PM，客戶跟你有一點重疊。熱心，愛交朋友，常說「我的客戶也有這個需求」。'},
+  hank: {name: 'Hank', role: '智慧零售與交通業務', tag: '業務', color: '#2f7f9a', about: '負責零售與交通客戶的業務，客戶跟你有一點重疊。熱心，愛交朋友，常說「我的客戶也有這個需求」。'},
   dani: {name: 'Dani', role: '海外經銷商窗口', tag: '經銷', color: '#9a7a2f', about: '在東南亞幫棲光賣設備。說話直接，很清楚當地客戶要什麼價格。只用電話和 email 出現。'},
   huang: {name: 'Mr. Huang', role: '終端客戶・廠務主管', tag: '客戶', color: '#5d6d77', about: '真的在用這批設備的人。他不管誰的錯，他只要設備能開機。'}
 };
@@ -44,7 +44,7 @@ WORLD.cast = {
   zoe: {label: 'Zoe・行銷', fill: '#e0803a', ink: '#ffffff', cloth: 0x9a6a3a, color: 0xe0803a, hair: 0x5a3a22, long: true, node: 'mk1', face: 0, hidden: true},
   ian: {label: 'Ian・ID', fill: '#b8892a', ink: '#ffffff', cloth: 0x4a4a3a, color: 0xb8892a, hair: 0x2a2420, node: 'id1', face: 0, hidden: true},
   nora: {label: 'Nora・副總', fill: '#6b4f9a', ink: '#ffffff', cloth: 0x3a2f55, color: 0x6b4f9a, hair: 0x2a2a2e, long: true, node: 'mtw', face: 0, hidden: true},
-  hank: {label: 'Hank・PM', fill: '#2f7f9a', ink: '#ffffff', cloth: 0x2f5a6a, color: 0x2f7f9a, hair: 0x3a2a1c, node: 'hk', face: 0, hidden: true},
+  hank: {label: 'Hank・業務', fill: '#2f7f9a', ink: '#ffffff', cloth: 0x2f5a6a, color: 0x2f7f9a, hair: 0x3a2a1c, node: 'hk', face: 0, hidden: true},
   victor: {label: 'Victor・SI', fill: '#8d4a6b', ink: '#ffffff', cloth: 0x5b3a4b, color: 0x8d4a6b, hair: 0x1f1a17, node: 'mt1', face: 0, hidden: true}
 };
 
@@ -82,11 +82,11 @@ const GLOSS = [
   ['EVT / PVT / MP', '新產品的三個階段。EVT：工程驗證，做出少量工程樣品，目的是找問題。PVT：試產，在工廠實際跑一小批，確認量產的流程順不順。MP：量產，正式開始大量生產與出貨。'],
   ['落摔測試', '把包好的產品從固定高度、不同角度摔下去，看看有沒有壞。包材設計得好不好，要靠它驗證。'],
   ['BOM / BOM 表', '一台產品用到的所有零件清單與價格。看它就知道錢花在哪：通常前幾大零件就占了大部分成本。'],
-  ['SKU', '庫存單位。每一個不同型號、顏色、規格，都是一個 SKU。'],
-  ['PoC', '客戶拿產品實際試用，驗證能不能解決他的問題。PoC 通過，才比較有機會下單。'],
-  ['Brutal Fact', '直白的事實。不是「賣不好」這種結論，而是「哪些事實造成賣不好」，講的時候要有證據。'],
-  ['漏斗 / pipeline', '把銷售拆成階段：被看到、有興趣、試用、報價、下單。每個階段都會掉一些人。寄出樣品只是中間，不是接近成交。'],
-  ['GTM', 'Go-To-Market，怎麼把產品賣出去：賣給誰、透過誰、用什麼訊息、什麼價格。'],
+  ['老化測試 / burn-in', '出貨前讓機器在高溫下長時間滿載運轉，把容易早期故障的挑出來。跑得越久，挑得越乾淨，但出貨也越晚。'],
+  ['過熱降速', '處理器太熱時自動降低速度保護自己。機器沒壞，但跑得變慢。無風扇的機器特別要注意。'],
+  ['認證', '特定場合（例如車載、軌道）要求的檢測證明，沒有就不能投標。要花時間也要花錢。'],
+  ['漏斗 / pipeline', '把銷售拆成階段：被看到、有興趣、試用、報價、下單。每個階段都會掉一些人。拿到名片只是開始，不是接近成交。'],
+  ['SI', '系統整合公司，替客戶把機器、軟體、現場設備組成一套完整方案，常是工控機的實際買家。'],
   ['型錄', '把公司所有產品的規格、照片和賣點印成（或做成檔案的）一本冊子，給業務拿去給客戶看。'],
   ['ID / 工業設計', '工業設計師。負責產品的外觀、造型和顏色，產品的 3D 渲染圖通常出自他們。'],
   ['渲染圖', '用電腦畫出來、看起來像照片的產品圖。產品還沒做出來、或不方便拍照的時候，型錄和簡報都靠它。'],
