@@ -25,7 +25,11 @@ const PMX_GOSSIP = [
   {t: '產線的 Ray 最近常常藉口「巡線」跑去品保那邊。大家都猜他是為了 Ella，但他自己死不承認。', x: ['ella']},
   {t: 'Maggie 的餅乾是她自己週末烤的。她從來沒說過，但鐵盒裡的食譜小卡，被人看到過。', x: []},
   {t: 'Walter 總裁表面不太管事，其實誰的報告準不準時，他都記得。', x: []},
-  {t: '聽說 Maggie 最近被別的公司挖角了，不知道是真是假。', x: []}];
+  {t: '聽說 Maggie 最近被別的公司挖角了，不知道是真是假。', x: []},
+  {t: 'Hank 跟 Lena 上次一起去展覽，回來之後兩個人都很少講話。有人說是吵架，有人說是在曖昧，沒有人問得出來。', x: ['hank', 'lena']},
+  {t: '倉庫的 Ben 每天午休都躲在後面講電話，語氣超甜。大家都在猜對象是誰。', x: []},
+  {t: 'Zoe 偷偷在接外面的設計案，晚上都在改稿。小心，不要讓 Lena 知道。', x: ['zoe']},
+  {t: '聽說 Jay 和 Owen 上次殺價殺到面紅耳赤，結果現在變成會一起吃宵夜的朋友。', x: ['jay']}];
 /* 有用的提示：每個人說的不一樣。Ian 一遇到就說他要的是什麼 */
 const PMX_TIPS = {
   1: ['規格如果不確定，直接打電話問客戶現場的人，比聽轉述準。', '做完線要用實機測，不然就是賭運氣。測不測，客戶現場會告訴你。'],
@@ -64,8 +68,9 @@ const PMX_SEG = {
   c4d: ['Cora 會殺價。別直接降價，拿數量或付款條件換折扣，毛利率要守住底線。', 'Cora 的採購說，她們也在比別家的報價。'],
   c4e: ['向 KP 報告時，先講毛利率和風險。毛利太低，不要等被問才講。', 'KP 今天心情看起來還可以。']};
 const PMX_IAN = '我要的是一頁 Brief：要什麼、給誰看、幾張、什麼時候要。三句話就夠，不要丟一堆檔案給我。';
-const PMX_VIS = ['mia', 'ian', 'jay', 'sam', 'ella', 'hank', 'zoe'];   /* 輪流來喝咖啡的人 */
-const PMX_STORY = {ian: 1, hank: 1, zoe: 1};   /* 這幾個人是故事裡的人：只在他們不在場景裡的時候才會來喝咖啡 */
+const PMX_VIS = ['mia', 'ian', 'jay', 'zoe', 'sam', 'ella', 'hank', 'lena'];
+const PMX_NOTIP = {zoe: 1, lena: 1};   /* 行銷通常不會給有用的建議，只會聊八卦 */   /* 輪流來喝咖啡的人 */
+const PMX_STORY = {ian: 1, hank: 1, zoe: 1, lena: 1};   /* 這幾個人是故事裡的人：只在他們不在場景裡的時候才會來喝咖啡 */
 const pmxKV = {id: null, st: '', until: 0, n: 0, back: false};   /* 現在在咖啡機旁的訪客 */
 const pmxPantryOpen = () => pmxKV.id && pmxKV.st === 'drink' && W && W.snap().vis[pmxKV.id];
 
@@ -92,7 +97,7 @@ function pmxCookie() {
 function pmxChat(who) {
   const n = ST.d.gos || 0, nn = n + 1;
   /* 指數到 2 以上：有用的提示。聊太多（單數、五以上）會被覺得太八卦 */
-  const kind = nn >= 2 && nn % 2 === 0 ? 'tip' : nn >= 5 ? 'sour' : 'gossip';
+  const kind = nn >= 2 && nn % 2 === 0 && !PMX_NOTIP[who] ? 'tip' : nn >= 5 && nn % 2 === 1 ? 'sour' : 'gossip';
   ST.d.gos = nn;
   let L;
   if (kind === 'tip') {
@@ -110,7 +115,7 @@ function pmxChat(who) {
     if (kind === 'sour') pm({trust: -3}, '同事覺得你太八卦。');
     else if (kind === 'tip') pm({trust: 1, cust: 2}, '和同事交流的收穫');
     toast('八卦指數 ' + nn, kind === 'tip' ? '這次聽到有用的資訊' : kind === 'sour' ? '打聽太多，信任降低' : '又聽到一件事');
-    pmxFree();
+    if (ST.d.chapter === 5) {pm5Add('cl', 10); pm5Check(pmxFree)} else pmxFree();
   }, {end: '離開'});
 }
 
@@ -169,7 +174,12 @@ const PMX_AMB = {
   sue: ['（腳步很快）物料單上少了一箱，我去倉庫翻翻看。'], max: ['（插車停了一下）小心！這棧板很重，走旁邊。'], dan: ['（按了兩聲喇叭）讓一下，這台剎車沒有那麼快。'],
   ray: ['這禮拜的出貨量比上禮拜多了一成，大家都在拚。你也是來催貨的嗎？', '剛剛 Kim 說的那個笑話，我笑了十分鐘。'],
   kim: ['我們這條線今天很順，希望下午也一樣。', '領班請我們喝飲料了，你要不要也來一杯？']};
+const PM5_PLACE = ['wc', 'shop_bento', 'shop_dumpling', 'shop_buffet', 'shop_mart'];
 STORY.talk = id => {
+  if (id === 'wc') {if (ST.d.chapter === 5) return pm5Wc(); return pmxVisit('wc', () => {busy = true; showGuide(); say([['sys', '你洗了手，回座位。']], pmxFree, {end: '好'})})}
+  if (PM5_SHOP[id]) return pm5Shop(id);
+  if (ST.d.chapter === 5 && id === 'warehouse' && !busy) return pm5Wh();
+  if (ST.d.chapter === 5 && pm5Talk(id)) return true;
   if (id === 'pantry' || PMX_KIT[id] || (id === pmxKV.id && pmxPantryOpen())) return pmxPantry();
   if (PMX_AMB[id] && !busy && ST.on) {
     busy = true; showGuide(); const L = PMX_AMB[id]; ST.amt = (ST.amt || 0) + 1;
@@ -186,6 +196,7 @@ MOVE.near = () => {
   if (r && (PMX_MOVER[r[0]] || r[0] === 'ray' || r[0] === 'kim')) return null;   /* 路過搬貨、聊天的人不跳按鈕 */
   if (r || !W || !ST.on) return r;
   const s = W.snap(), at = id => Math.hypot(STORY.places[id].at[0] - s.me[0], STORY.places[id].at[1] - s.me[1]);
+  for (const p of PM5_PLACE) if (at(p) < 2.2) return [p, STORY.places[p].name];
   if (at('pantry') < 2.4) return ['pantry', pmxPantryOpen() ? '茶水間：咖啡・聊天' : '茶水間：咖啡・餅乾'];
   if (ST.d.mgone && at('mdesk') < 2.0) {
     if (ST.d.mtoast !== ST.seg) {ST.d.mtoast = ST.seg; toast('Maggie 的座位', ST.d.mwhy === 'hard' ? '空的。你的腳步慢了下來。' : '空的。桌上還留著一個餅乾盒。')}
@@ -199,7 +210,7 @@ STORY.beats.forEach(b => {if (b.to === 'maggie') {const w = b.when; b.when = () 
 
 /* ───────── 被資遣、Maggie 離職：包住每一章的結尾 ───────── */
 /* 資遣：要很嚴重才會發生。至少三次很差的選擇，而且團隊信任掉到 22 以下。第一章（線材風波）不會 */
-const pmxFired = () => !!ST.d.fired || (ST.d.chapter !== 1 && (ST.d.neg || 0) >= 3 && pmStat('trust') <= 22);
+const pmxFired = () => !!ST.d.fired || !!ST.d.sfire || (ST.d.chapter !== 1 && (ST.d.neg || 0) >= 3 && pmStat('trust') <= 22);
 /* Maggie 的壓力：一直被打擾（每次你去找她、每次有人插進來）加上你搞砸的事。壓力太大，她會撐不住 */
 const pmxStress = () => (ST.d.mint || 0) + 2 * (ST.d.neg || 0);
 const pmxHard = () => pmxStress() >= 12;
@@ -211,6 +222,10 @@ const PMX_INT = [
   ['Maggie 的桌上堆著三份待簽的文件，電話又響了。她揉了揉太陽穴，才轉向你。', 'Maggie 的杯子是空的，午餐的便當還沒打開。這是她今天第四次被打斷，語氣卻還是很溫和。']];
 STORY.beats.forEach(b => {
   if (b.to === 'maggie' && b.lines) {
+    if (/^c\d/.test(b.seg)) {   /* 其他章的 Maggie：如果之前得罪過她，她一樣不太想理你 */
+      const g = b.lines, p = b.post; b.lines = () => ST.d.cold ? pmM() : g();
+      if (p) b.post = () => ST.d.cold ? [] : p();
+    }
     const f = b.lines;
     b.lines = () => {
       const L = f(), n = ST.d.mint = (ST.d.mint || 0) + 1, P = PMX_INT[n >= 8 ? 2 : n >= 4 ? 1 : 0];
@@ -318,7 +333,7 @@ function pmxFiredEnding() {
 }
 const pmxEnding0 = STORY.ending;
 STORY.ending = () => {
-  const d = ST.d, E = d.fired ? pmxFiredEnding() : pmxEnding0();
+  const d = ST.d, E = d.fired && d.chapter !== 5 ? pmxFiredEnding() : pmxEnding0();
   d.nch = (d.nch || 0) + 1;
   if (!d.fired && d.mgone && d.mwhy && d.nch >= 1 && !d.mshown) {
     d.mshown = true;
@@ -329,13 +344,14 @@ STORY.ending = () => {
 };
 /* 直接開始另一個故事（保留：Maggie 是否離職、這次連續玩了幾章、八卦指數） */
 function pmxPlay(id) {
-  const o = ST.d, keep = {chapter: id, nch: o.fired ? 0 : o.nch || 0, gos: o.gos || 0, gi: o.gi || 0, ti: o.ti || 0, mint: o.mint || 0};
+  const o = ST.d, keep = {chapter: id, nch: o.fired ? 0 : o.nch || 0, gos: o.gos || 0, gi: o.gi || 0, ti: o.ti || 0, mint: o.mint || 0, cold: o.cold || 0, coldN: o.coldN || 0};   /* 上一章得罪了 Maggie，下一章她還記得 */
   if (o.mgone && !o.fired) {keep.mgone = true; keep.mwhy = o.mwhy; keep.mshown = true}
   Object.assign(ST, {d: keep, talks: 0}); boot0(ST.name);
   ST.q = nextIndex(0);
   const seg = STORY.beats[ST.q].seg; ST.clock = STORY.segs[seg].t || 0; save();
   enterSeg(seg, () => keep.mgone
     ? say([['sys', keep.mwhy === 'hard' ? '你走進辦公室。Maggie 的座位是空的。你不太敢看它。' : '你走進辦公室。Maggie 的座位是空的，桌上的餅乾鐵盒還在。']], beginBeat)
+    : keep.cold ? say([['sys', '你走進辦公室。Maggie 看了你一眼，又把視線轉回螢幕。上次你說的話，她還記得。']], beginBeat)
     : beginBeat());
 }
 

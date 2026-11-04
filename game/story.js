@@ -571,14 +571,15 @@ STORY.beats = [
 /* 兩章：開頭選一章。第一章的事只在選第一章時發生 */
 /* 故事清單：加一章就在這裡加一行，「桌上有幾件事」會自己跟著變。id 是故事檔裡用的章號（跟順序無關） */
 const PMCH = [{id: 1, t: '第一章：線材風波，接手爛攤子', s: '線材風波'}, {id: 3, t: '第二章：新品推出，為公司創造營收', s: '新品推出'},
-  {id: 2, t: '第三章：型錄風暴，業務行銷與你', s: '型錄風暴'}, {id: 4, t: '第四章：客製新案，和客戶報價', s: '客製新案'}];
+  {id: 2, t: '第三章：型錄風暴，業務行銷與你', s: '型錄風暴'}, {id: 4, t: '第四章：客製新案，和客戶報價', s: '客製新案'},
+  {id: 5, t: '第五章：薪水小偷，上班族的一天', s: '薪水小偷'}];
 const PMNUM = ['', '一', '兩', '三', '四', '五', '六', '七', '八'];
 STORY.segs.menu = {name: '今天要處理哪一件事', sub: PMNUM[PMCH.length] + '個故事都在棲光科技。順序沒關係。', t: 520, mood: 'day', scene() {pmCast({})}};
-STORY.beats.forEach(b => {const w = b.when; b.when = () => ST.d.chapter !== 2 && ST.d.chapter !== 3 && ST.d.chapter !== 4 && (!w || w())});
+STORY.beats.forEach(b => {const w = b.when; b.when = () => ST.d.chapter !== 2 && ST.d.chapter !== 3 && ST.d.chapter !== 4 && ST.d.chapter !== 5 && (!w || w())});
 STORY.beats.unshift({seg: 'menu', when: () => !ST.d.chapter,
   lines: () => [['sys', '棲光科技的早上。你的桌上有' + PMNUM[PMCH.length] + '件事在等你。']],
   mini(done) {
-    say([['sys', '先處理哪一件？']], null, {choice: PMCH.map(c => [c.t, () => {ST.d.chapter = c.id; done()}])});
+    say([['sys', '先處理哪一件？']], null, {fixed: true, choice: PMCH.map(c => [c.t, () => {ST.d.chapter = c.id; done()}])});
   }});
 
 /* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */
@@ -593,6 +594,7 @@ STORY.ending = () => {
   if (ST.d.chapter === 2) return STORY.ending2();
   if (ST.d.chapter === 3) return STORY.ending3();
   if (ST.d.chapter === 4) return STORY.ending4();
+  if (ST.d.chapter === 5) return STORY.ending5();
   const d = ST.d, day = d.day || 0, weeks = Math.max(1, Math.ceil(day / 7)), res = d.result || 'clean', cookies = d.cookies || 0;
   const title = res === 'fail' ? '線材又錯了一次'
     : d.path === 'adapter' ? '繞了一大圈，還是把線換對了'

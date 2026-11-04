@@ -45,7 +45,7 @@ function say(lines,done,opts){
     dlg.innerHTML=DLG.who(who)
       +'<p class="dlg-t'+(who==='sys'||who==='note'?' nar':'')+'" id="dlgT"></p><p class="dlg-g" id="dlgG" hidden></p>'
       +'<div class="row end"><span class="fine mono dlg-n">'+(lines.length>1?(i+1)+' / '+lines.length:'')+'</span>'
-      +(last&&opts.choice?opts.choice.map((x,j)=>'<button class="btn choice" type="button" data-c="'+j+'"'+(j===0?' id="dlgNext"':'')+' style="order:'+(1+Math.floor(Math.random()*2))+'">'+x[0]+'</button>').join(''):'')
+      +(last&&opts.choice?opts.choice.map((x,j)=>'<button class="btn choice" type="button" data-c="'+j+'"'+(j===0?' id="dlgNext"':'')+' style="order:'+(opts.fixed?1:1+Math.floor(Math.random()*2))+'">'+x[0]+'</button>').join(''):'')
       +(last&&opts.extra?opts.extra.map((x,j)=>'<button class="btn" type="button" data-x="'+j+'">'+x[0]+'</button>').join(''):'')
       +(opts.skip&&!last?'<button class="btn btn-ghost" id="dlgSkip" type="button">跳過</button>':'')
       +(last&&opts.choice?'':'<button class="btn btn-primary" id="dlgNext" type="button">'+(last?(opts.end||'好'):'繼續')+'</button>')+'</div>';

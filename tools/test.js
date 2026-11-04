@@ -62,10 +62,12 @@ async function play(br, o) {
       if (ch.length) {   /* o.pick：依序比對選項文字，比到的就選那個；比不到就照第一個／最後一個 */
         let k = o.last ? ch.length - 1 : 0;
         if (o.pick) { const tx = await Promise.all(ch.map(c => c.textContent())); const i = tx.findIndex(t => o.pick.some(r => r.test(t))); if (i >= 0) k = i }
+        if (ch.length > 2) { const tx2 = await Promise.all(ch.map(c => c.textContent())); if (tx2.some(t => /再去看看別家/.test(t))) k = 0 }   /* 餐廳街：最後一個選項是「再去看看別家」，要吃一份才會走到下一件事 */
         await ch[k].click(); log.push('choice'); continue }
       await click('#dlgNext'); continue;
     }
-    if (await vis('#gGo')) { const c = await pg.evaluate(() => window.__t.cur()); log.push('go:' + (c && c.to)); await click('#gGo'); await pg.waitForFunction(() => document.getElementById('guide').hidden || !document.getElementById('dlg').hidden, null, { timeout: 8000 }).catch(() => {}); continue }   /* 走到了才會開口 */
+    if (await vis('#gGo')) { const c = await pg.evaluate(() => window.__t.cur()); log.push('go:' + (c && c.to)); await click('#gGo'); await pg.waitForFunction(() => document.getElementById('guide').hidden || !document.getElementById('dlg').hidden, null, { timeout: 8000 }).catch(() => {}); if (c && c.to === 'foodc') await pg.evaluate(() => window.__t.interact('shop_mart')); await pg.waitForFunction(() => !document.getElementById('dlg').hidden, null, { timeout: 8000 }).catch(() => {}); continue }   /* 走到了才會開口；餐廳街要自己挑一家店進去 */
+    if (await pg.evaluate(() => { const c = window.__t.cur(); return !!c && c.to === 'foodc' && !window.__t.busy() })) { await pg.evaluate(() => window.__t.interact('shop_mart')); await pg.waitForFunction(() => !document.getElementById('dlg').hidden, null, { timeout: 8000 }).catch(() => {}); continue }   /* 午休：自己挑一家店進去 */
     await pg.waitForTimeout(150);
   }
   let card = false;
@@ -102,7 +104,7 @@ async function browser() {
   const br = await browser();
   const ONLY = process.env.ONLY;
   const a = ONLY ? true : await play(br, { id: 'desktop', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Alex', dial: true });
-  const b = ONLY ? true : await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true });
+  const b = ONLY ? true : await play(br, { id: 'phone', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/線材風波/] });
   /* 另外幾條路：第一章的轉接頭（有書面）、第一章得罪 Maggie（最後一個選項）、第二章全部第一個／全部最後一個 */
   const extra = [
     { id: 'c1adapter', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sam', dial: true, pick: [/線材風波/, /轉接頭出貨/, /書面確認/] },
@@ -114,6 +116,8 @@ async function browser() {
     { id: 'c4bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/客製新案/] },
     { id: 'c2bad', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/型錄風暴/] },
     { id: 'fired', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Fay', last: true, pick: [/型錄風暴/], preset: { trust: 0, neg: 3, bad: ['測試：多次沒有確認就往下做'] }, mustHave: /資遣通知/ },
+    { id: 'c5', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Sue', pick: [/薪水小偷/] },
+    { id: 'c5last', vp: { width: 390, height: 844 }, scheme: 'dark', name: '', touch: true, last: true, pick: [/薪水小偷/] },
     { id: 'chain', vp: { width: 1280, height: 800 }, scheme: 'light', name: 'Ray', chain: 2, pick: [/客製新案/] }
   ];
   const rest = []; for (const o of extra) if (!ONLY || o.id === ONLY) rest.push(await play(br, o));
