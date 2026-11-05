@@ -33,7 +33,7 @@ function qx7Score() {
 
 STORY.segs.c3a = {name: '新產品：QX-7', sub: '一台無風扇的邊緣運算工控機。你第一個從零開始的案子。', t: 540, mood: 'day', scene() {pm3Cast({leo: 'leoD'})},
   note: 'EVT 的目的是找問題，不是證明沒問題。'};
-STORY.segs.c3b = {name: '試產 PVT', sub: '工廠試跑一百台。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm3Cast({})},
+STORY.segs.c3b = {name: '試產 PVT', sub: '工廠試跑一百台。', get t() {return pmDay(11, 30)}, mood: 'day', scene() {pm3Cast({})},
   note: '試產的目的，是在量產之前，把流程裡的洞找出來。'};
 STORY.segs.c3d = {name: '四個月後', sub: 'QX-7 上市了，但訂單沒有來。', get t() {return pmDay(9, 30)}, mood: 'day', scene() {pm3Cast({})},
   note: '規格很強，不等於有人要買。'};

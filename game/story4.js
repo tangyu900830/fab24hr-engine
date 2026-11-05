@@ -36,7 +36,7 @@ function qkNego(p, how) {
 
 STORY.segs.c4a = {name: '客戶要客製', sub: 'Kai 說，有個客戶想要 QX-7 的客製版。', t: 540, mood: 'day', scene() {pm4Cast({})},
   note: '客製的第一步，是弄清楚客戶「真正」要什麼。'};
-STORY.segs.c4b = {name: '問供應商', sub: '成本與細節，要從供應商那邊挖出來。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm4Cast({})}};
+STORY.segs.c4b = {name: '問供應商', sub: '成本與細節，要從供應商那邊挖出來。', get t() {return pmDay(11, 30)}, mood: 'day', scene() {pm4Cast({})}};
 STORY.segs.c4c = {name: '算成本、定報價', sub: '價格不能太高，也不能太低。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pm4Cast({})},
   note: '報價不是猜一個數字，是從成本一路往上算。'};
 STORY.segs.c4d = {name: '客戶殺價', sub: '報價送出去了。', get t() {return pmDay(10, 30)}, mood: 'day', scene() {pm4Cast({})}};

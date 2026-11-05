@@ -16,13 +16,14 @@ const pm5N = n => 'NT$ ' + Math.round(n).toLocaleString('en-US');
 const pm5Min = () => (ST.d.sal || 60000) / 22 / 480;   /* 每分鐘薪水 */
 
 /* 辦公室裡坐著的人（座位點見 office.js）。午休：一半的人去餐廳街吃飯，KP 也坐在那裡 */
-const PM5_DESK = {kai: 'kaiD', hank: 'hkD', lena: 'mk2', zoe: 'mk1', ian: 'id1', leo: 'leoD', tom: 's2', anna: 's1', ken: 's3', lily: 's4', bo: 's5', vera: 's6'};
+const PM5_DESK = {kai: 'kaiD', hank: 'hkD', lena: 'mk2', zoe: 'mk1', ian: 'id1', leo: 'leoD', anna: 's1', ken: 's3', lily: 's4', bo: 's5'};
 const PM5_BOSS = {nora: ['vp', 0], walter: ['ceo', 0], fu: 'o1', zhang: 'o2', yi: 'o3', kc: 'o4'};
-const PM5_LUNCH = {tom: ['u1', Math.PI], anna: ['u2', Math.PI], lena: ['u3', Math.PI], bo: ['u4', Math.PI], ken: ['d1', 0], kp: ['d2', 0], lily: ['d3', 0], vera: ['d4', 0]};   /* 上排的桌子坐在南邊、面向北；下排坐在北邊、面向鏡頭 */
+const PM5_LUNCH = {anna: ['u2', Math.PI], lena: ['u3', Math.PI], bo: ['u4', Math.PI], ken: ['d1', 0], kp: ['d2', 0], lily: ['d3', 0]};   /* 上排的桌子坐在南邊、面向北；下排坐在北邊、面向鏡頭 */
 function pm5Cast(lunch) {
   const o = Object.assign({}, PM5_DESK, PM5_BOSS);
   if (lunch) Object.keys(PM5_LUNCH).forEach(id => {o[id] = PM5_LUNCH[id]});
   pmCast(o);
+  if (W && W.speed) W.speed('kp', .78);   /* 第五章的 KP 走慢一點 */
 }
 STORY.segs.w5a = {name: '薪水小偷', sub: '週三早上。又是上班的一天。', t: 525, mood: 'day', scene() {pm5Cast(false)}};
 STORY.segs.w5b = {name: '午休', sub: '十二點。公司餐補一餐 NT$130。', t: 720, mood: 'day', scene() {pm5Cast(true)}};
@@ -176,27 +177,62 @@ const PM5_SHOP = {
   shop_dumpling: {n: '老張水餃', says: '水餃現包的，酸辣湯要趁熱喝。', items: [['水餃 10 顆', 70, 1, '一份很輕巧。'], ['水餃 10 顆＋酸辣湯', 105, 2, '酸酸辣辣，剛好。'], ['水餃 20 顆', 130, 2, '剛好一餐的量。'], ['水餃 20 顆＋酸辣湯', 165, 3, '很撐，但要自己補錢。']]},
   shop_buffet: {n: '家常自助餐', says: '自己夾，秤重計價。', items: [['少少一盤', 90, 1, '你夾得很克制。'], ['中等一盤（三菜一肉）', 130, 2, '剛剛好，沒有浪費。'], ['滿盤，什麼都夾', 175, 3, '吃得很爽，但要多付一些。']]},
   shop_mart: {n: '全時超商', says: '歡迎光臨。便當要加熱嗎？', items: [['微波便當＋熱咖啡', 130, 2, '剛好湊滿餐補，咖啡還是熱的。'], ['便當＋飯糰＋茶葉蛋＋咖啡', 180, 3, '吃得很滿足，但錢包有點痛。'], ['兩個飯糰＋一瓶飲料', 90, 1, '很輕巧，也浪費了餐補。']]}};
+/* 午休時間（11:00～13:00）：每一章都可以去餐廳街買東西。有時候忙到吃不到，12:30 以後便當、水餃、自助餐都賣完了，只剩超商 */
+const pm5Hm = () => ((Math.round(ST.clock) % 1440) + 1440) % 1440;
+const pm5Tick = m => {ST.clock += m; if (typeof hud === 'function') hud()};
+const PM5_BUSY = [
+  [['sys', '你剛走到餐廳街，手機震了一下。'], ['kai', '（訊息）客戶又打來了，說現在要跟你確認一件事！'], ['sys', '你看著排隊的人龍，又看了看手機。']],
+  [['sys', '你拿起錢包，正要出門。'], ['kp', '（走過來）等一下，有件事要你現在處理，十分鐘就好。'], ['sys', '十分鐘，變成了三十分鐘。']],
+  [['sys', '電話響了。是你一直在等的那通。'], ['sys', '你講完的時候，排隊的已經是另一批人了。']]];
+function pm5Sold(S) {
+  say([['sys', S.n + '的老闆朝你攤了攤手：「賣完了！十二點半以後，我們都沒有了。」'], ['sys', '隔壁的超商，應該還有一些。']], pmxFree, {end: '離開'});
+}
 function pm5Shop(id) {
   const S = PM5_SHOP[id];
-  if (ST.d.chapter !== 5) {   /* 不是午休：只能看看 */
-    return pmxVisit(id, () => {busy = true; showGuide(); say([['sys', S.n + '的老闆朝你點點頭。現在不是你要來的時候。']], pmxFree, {end: '離開'})});
-  }
+  if (ST.d.chapter !== 5) return pm5Lunch(id);
   return pmxVisit(id, () => {
     busy = true; showGuide();
     const d = ST.d, first = !(d.seen = d.seen || {})[id]; d.seen[id] = 1;
     if (d.eat) {say([['sys', '你已經吃過午餐了。']], pmxFree); return}
     if (first) d.lm = (d.lm || 0) + 5;
-    const ch = S.items.map(it => [it[0] + '　NT$' + it[1], () => pm5Eat(id, it)]).concat([['再去看看別家', pmxFree]]);
-    const open = () => say([['sys', '你走進' + S.n + '。'], ['sys', S.says], ['sys', '公司餐補：一餐 NT$' + PM5_SUB + '。超過的部分，自己付；沒用完，不會退。']], null, {choice: ch});
+    if (ST.clock < 720 + (d.lm || 0)) {ST.clock = 720 + (d.lm || 0); if (typeof hud === 'function') hud()}
+    const late = pm5Hm() >= 750;
+    if (late && id !== 'shop_mart') {pm5Sold(S); return}
+    const items = late ? [S.items[2]] : S.items;
+    const ch = items.map(it => [it[0] + '　NT$' + it[1], () => pm5Eat(id, it)]).concat([['再去看看別家', pmxFree]]);
+    const open = () => say([['sys', '你走進' + S.n + '。'], ['sys', late ? '架上只剩下最後幾樣。店員說：「十二點半了，就剩這些。」' : S.says], ['sys', '公司餐補：一餐 NT$' + PM5_SUB + '。超過的部分，自己付；沒用完，不會退。']], null, {choice: ch});
     const n = Object.keys(d.seen).length;
     if (first && n === 1) pm5EvQueue(open);
     else if (first && n === 2) pm5EvGossip(open);
     else open();
   });
 }
+/* 第一～四章：午休時間去買東西。吃飽了精力回一些，但花時間 */
+function pm5Lunch(id) {
+  const S = PM5_SHOP[id];
+  return pmxVisit(id, () => {
+    busy = true; showGuide();
+    const d = ST.d, m = pm5Hm();
+    if (m < 660 || m >= 780) {say([['sys', S.n + '的老闆說：「我們中午十一點到下午一點才有賣。」'], ['sys', m < 660 ? '現在還沒到午餐時間。' : '午休已經結束了，大家都回座位了。']], pmxFree, {end: '離開'}); return}
+    if (d.lunchSeg === ST.seg) {say([['sys', '你已經吃過午餐了。']], pmxFree); return}
+    if (d.busySeg !== ST.seg && Math.random() < .3) {
+      d.busySeg = ST.seg;
+      say(PM5_BUSY[Math.floor(Math.random() * PM5_BUSY.length)], () => {pm5Tick(30); pmBump('energy', -3); toast('沒吃到午餐', '精力 ↓'); pmxFree()}, {end: '先回去處理'});
+      return;
+    }
+    pm5Tick(10);
+    if (pm5Hm() >= 750 && id !== 'shop_mart') {pm5Sold(S); return}
+    const late = pm5Hm() >= 750, items = late ? [S.items[2]] : S.items;
+    const ch = items.map(it => [it[0] + '　NT$' + it[1], () => {
+      d.lunchSeg = ST.seg;
+      say([['sys', it[3]]], () => {pm5Tick(10 + it[2] * 5); pmBump('energy', it[2] * 3); toast('吃飽了', '精力 ↑'); pmxFree()}, {end: '吃飽了，回去'});
+    }]).concat([['再去看看別家', pmxFree]]);
+    say([['sys', '你走進' + S.n + '。'], ['sys', late ? '架上只剩下最後幾樣。' : S.says]], null, {choice: ch});
+  });
+}
 function pm5Eat(id, it) {
   const d = ST.d, total = it[1], used = Math.min(total, PM5_SUB), self = Math.max(0, total - PM5_SUB), waste = PM5_SUB - used;
-  d.eat = {shop: PM5_SHOP[id].n, item: it[0], total, used, self, waste, full: it[2]}; d.lm = (d.lm || 0) + 20;
+  d.eat = {shop: PM5_SHOP[id].n, item: it[0], total, used, self, waste, full: it[2]}; d.lm = (d.lm || 0) + 20; if (ST.clock < 720 + d.lm) {ST.clock = 720 + d.lm; if (typeof hud === 'function') hud()}
   const verdict = self === 0 && waste === 0 && it[2] >= 2 ? '用得剛剛好，吃得又飽。這就是最划算的一餐。'
     : self > 0 ? '你多付了 NT$' + self + '，但吃得很滿足。'
     : waste > 0 ? '餐補有 NT$' + waste + ' 沒用到，過期就沒了。' : '用滿了餐補，只是沒有很飽。';

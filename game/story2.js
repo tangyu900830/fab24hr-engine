@@ -15,7 +15,7 @@ STORY.segs = Object.defineProperties(STORY.segs, Object.getOwnPropertyDescriptor
   c2b: {name: '型錄啟動會議', sub: '大會議室 A。行銷、業務、KP，還有你。', t: 840, mood: 'day',
     scene() {pm2Cast({kp: 'mt2', lena: 'mt1', zoe: 'mt3', kai: 'mtw'})},
     note: '開會前先問一句：這個案子，誰是最後拍板的人？'},
-  c2c: {name: '收集規格', sub: '兩週後。型錄的內容，全都要靠你。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pm2Cast({})}},
+  c2c: {name: '收集規格', sub: '兩週後。型錄的內容，全都要靠你。', get t() {return pmDay(11, 30)}, mood: 'day', scene() {pm2Cast({})}},
   c2d: {name: '第二次會議', sub: '草稿出來了。意見也跟著出來了。', get t() {return pmDay(15, 0)}, mood: 'day',
     scene() {pm2Cast({kp: 'mt2', lena: 'mt1', zoe: 'mt3', kai: 'mtw'})}},
   c2e: {name: '渲染圖', sub: '找 Ian。要東西之前，先把需求寫清楚。', get t() {return pmDay(10, 30)}, mood: 'day', scene() {pm2Cast({})},

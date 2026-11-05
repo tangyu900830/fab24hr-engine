@@ -236,18 +236,19 @@ levelAdd('office', function (K) {
     g.globalAlpha = .8; g.font = '500 ' + Math.round(h * .19) + 'px ' + K.FONT; g.fillText(sub, w / 2, h * .78);
   };
   flat(EX1 - EX0, ZP - ZN, mrbH, (EX0 + EX1) / 2, .01, (ZN + ZP) / 2, 1, G);
-  /* 外圍：北牆（有一個門，對著樣品架旁邊的走道）、西牆、東牆、南邊是玻璃 */
-  B(9.0 - EX0, 3.2, .3, M.wall, (EX0 + 9.0) / 2, 1.6, ZN); B(EX1 - 10.6, 3.2, .3, M.wall, (10.6 + EX1) / 2, 1.6, ZN); B(1.6, .9, .3, M.wall, 9.8, 2.75, ZN);
-  B(.3, 3.2, ZS - ZN, M.wall, EX0, 1.6, (ZN + ZS) / 2); B(.3, 3.2, ZS - ZN, M.wall, EX1, 1.6, (ZN + ZS) / 2);
-  B(EX1 - EX0, .5, .2, M.wall, (EX0 + EX1) / 2, .25, ZS); B(EX1 - EX0, 1.9, .08, M.glass, (EX0 + EX1) / 2, 1.45, ZS, false); B(EX1 - EX0, .1, .14, brass, (EX0 + EX1) / 2, 2.42, ZS);
+  /* 外圍與隔間全部是玻璃（加金色細框），只有北邊對著走道的地方留一個門 */
+  const glassW = (w, d, x, z) => {B(w, 2.4, d, M.glass, x, 1.2, z, false); B(w + (d < .1 ? .06 : 0), .1, d + .06, brass, x, 2.45, z)};
+  glassW(9.0 - EX0, .08, (EX0 + 9.0) / 2, ZN); glassW(EX1 - 10.6, .08, (10.6 + EX1) / 2, ZN); B(1.6, .1, .14, brass, 9.8, 2.45, ZN);
+  glassW(.08, ZS - ZN, EX0, (ZN + ZS) / 2); glassW(.08, ZS - ZN, EX1, (ZN + ZS) / 2);
+  glassW(EX1 - EX0, .08, (EX0 + EX1) / 2, ZS);
   for (let x = 3; x < 15.6; x += 3.2) B(.08, 2.4, .12, brass, x, 1.2, ZS);
-  /* 走廊與辦公室之間：玻璃隔間，副總的門在 6.0～7.6，總裁的門在 8.4～10.0 */
-  [[EX0, 6.0], [7.6, 8.4], [10.0, EX1]].forEach(r => {const w = r[1] - r[0], c = (r[0] + r[1]) / 2; B(w, .5, .12, M.wall, c, .25, ZP); B(w, 1.9, .08, M.glass, c, 1.45, ZP, false); B(w, .1, .14, brass, c, 2.42, ZP)});
-  B(.3, 3.2, ZS - ZP, M.wall, XM, 1.6, (ZP + ZS) / 2);
-  B(1.6, .8, .14, M.wall, 6.8, 2.8, ZP); B(1.6, .8, .14, M.wall, 9.2, 2.8, ZP);
-  sign2(6.8, 2.78, ZP, 1.4, .56, plaque('副總辦公室', 'VICE PRESIDENT', '#f3e3b6', '#d9b45a', '#4a2f12'));
-  sign2(9.2, 2.78, ZP, 1.4, .56, plaque('總裁辦公室', 'PRESIDENT', '#3b4a6a', '#1f2c46', '#f3d78a'));
-  sign2(9.8, 2.7, ZN, 1.5, .6, plaque('高層區', 'EXECUTIVE FLOOR', '#e8d28a', '#c9a24a', '#3d2a10'));
+  /* 走廊與辦公室之間：副總的門在 6.0～7.6，總裁的門在 8.4～10.0 */
+  [[EX0, 6.0], [7.6, 8.4], [10.0, EX1]].forEach(r => glassW(r[1] - r[0], .08, (r[0] + r[1]) / 2, ZP));
+  glassW(.08, ZS - ZP, XM, (ZP + ZS) / 2);
+  B(.08, 2.4, .1, brass, 6.0, 1.2, ZP); B(.08, 2.4, .1, brass, 7.6, 1.2, ZP); B(.08, 2.4, .1, brass, 8.4, 1.2, ZP); B(.08, 2.4, .1, brass, 10.0, 1.2, ZP); B(1.6, .1, .14, brass, 6.8, 2.45, ZP); B(1.6, .1, .14, brass, 9.2, 2.45, ZP);
+  sign2(6.8, 2.1, ZP, 1.4, .56, plaque('副總辦公室', 'VICE PRESIDENT', '#f3e3b6', '#d9b45a', '#4a2f12'));
+  sign2(9.2, 2.1, ZP, 1.4, .56, plaque('總裁辦公室', 'PRESIDENT', '#3b4a6a', '#1f2c46', '#f3d78a'));
+  sign2(9.8, 2.1, ZN, 1.5, .6, plaque('高層區', 'EXECUTIVE FLOOR', '#e8d28a', '#c9a24a', '#3d2a10'));
   exBlk.push([EX0, 9.0, ZN - .2, ZN + .2], [10.6, EX1, ZN - .2, ZN + .2], [EX0 - .2, EX0 + .2, ZN, ZS], [EX1 - .2, EX1 + .2, ZN, ZS], [EX0, EX1, ZS - .1, ZS + .3],
     [EX0, 6.0, ZP - .1, ZP + .1], [7.6, 8.4, ZP - .1, ZP + .1], [10.0, EX1, ZP - .1, ZP + .1], [XM - .2, XM + .2, ZP, ZS]);
   /* 走廊：長條邊桌、花、畫 */

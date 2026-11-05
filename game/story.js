@@ -45,6 +45,7 @@ function pmCast(o) {
   const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'hk', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null, leo: null,
     tom: null, anna: null, ken: null, lily: null, bo: null, vera: null, fu: null, zhang: null, yi: null, kc: null};
   Object.assign(base, o);
+  if (W.speed) W.speed('kp', 1);   /* 第五章會把他放慢，其他章回到原本的速度 */
   Object.keys(base).forEach(id => {const v = base[id]; if (v) {W.put(id, Array.isArray(v) ? v[0] : v, Array.isArray(v) ? v[1] : undefined); W.show(id, true)} else W.show(id, false)});
 }
 /* Maggie 不會每次都發餅乾：被說了的時候，三次裡只有一次拿出餅乾，其餘是一句鼓勵。
@@ -86,7 +87,7 @@ STORY.segs = {
   ret1: {name: '怎麼做一條對的線', sub: '換線不是去店裡買一條回來。', get t() {return pmDay(9, 0)}, mood: 'day', scene() {pmCast({})}},
   ret2: {name: '線材廠的報價', sub: '規格表送出去了。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pmCast({})},
     note: '規格以實機為準，不以客戶或業務口述的為準。'},
-  ret3: {name: '三週後', sub: '線材廠通知：貨到了。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pmCast({})}},
+  ret3: {name: '三週後', sub: '線材廠通知：貨到了。', get t() {return pmDay(11, 30)}, mood: 'day', scene() {pmCast({})}},
   redo1: {name: '被退回來的線', sub: '等了三週，等到一條不能用的線。', get t() {return pmDay(11, 0)}, mood: 'day', scene() {pmCast({})}},
   redo2: {name: '再兩週後', sub: '重做的線到了。', get t() {return pmDay(10, 0)}, mood: 'day', scene() {pmCast({})}},
   ret4: {name: '寄出', sub: '線材通過了，接下來要安排寄出。', get t() {return pmDay(14, 0)}, mood: 'day', scene() {pmCast({kai: 'kaiD'})},
