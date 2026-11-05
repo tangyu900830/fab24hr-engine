@@ -8,7 +8,7 @@ HOME.fine = '棲光科技與裡面的人、產品、事件都是虛構的，與�
 /* 你自己的贊助連結（主頁與結算卡會顯示），例如：
    HOME.support = {url: 'https://buymeacoffee.com/你的名字', label: '☕ 喜歡的話，請我喝杯咖啡'};
    遊戲內容不能因為有沒有贊助而不同。 */
-HOME.support = null;
+HOME.support = {url: 'https://service.jkopay.com/r/transfer?j=Transfer:911572897', label: '☕ 喜歡的話，用街口支持作者'};   /* 自願贊助，不影響遊戲內容 */
 
 /* 遊戲裡的人。
    STORY.cast：對話框與圖鑑裡的樣子（about 是圖鑑的介紹）。
