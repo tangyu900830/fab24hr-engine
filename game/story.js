@@ -42,9 +42,10 @@ const pmDay = (h, m, plus) => ((ST.d.day || 0) + (plus || 0)) * 1440 + h * 60 + 
 /* 把人擺回預設的位置；o 裡有寫的就照 o（null 是不在場） */
 function pmCast(o) {
   if (!W) return;
-  const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'hk', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null, leo: null};
+  const base = {kp: 'kp', maggie: ST.d.mgone ? null : 'maggie', ethan: 'ethan', grace: 'hk', kai: null, walter: null, victor: null, lena: null, zoe: null, ian: null, nora: null, hank: null, tina: null, leo: null,
+    tom: null, anna: null, ken: null, lily: null, bo: null, vera: null, fu: null, zhang: null, yi: null, kc: null};
   Object.assign(base, o);
-  Object.keys(base).forEach(id => {if (base[id]) {W.put(id, base[id]); W.show(id, true)} else W.show(id, false)});
+  Object.keys(base).forEach(id => {const v = base[id]; if (v) {W.put(id, Array.isArray(v) ? v[0] : v, Array.isArray(v) ? v[1] : undefined); W.show(id, true)} else W.show(id, false)});
 }
 /* Maggie 不會每次都發餅乾：被說了的時候，三次裡只有一次拿出餅乾，其餘是一句鼓勵。
    做法：包住 Maggie 那件事的 lines，裡面提到餅乾的那幾行，輪到沒有餅乾的時候換成一句鼓勵的話 */

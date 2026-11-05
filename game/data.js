@@ -45,7 +45,17 @@ STORY.cast = {
   max: {name: 'Max', role: '插車司機', tag: '廠務', color: '#c07a2a', about: '開電動插車，把整棧板的成品從工廠運進倉庫。'},
   dan: {name: 'Dan', role: '插車司機', tag: '廠務', color: '#c07a2a', about: '開電動插車，把整棧板的物料從倉庫運進工廠。'},
   ray: {name: 'Ray', role: '產線領班', tag: '廠務', color: '#c07a2a', about: '管產線的領班，嗓門大，什麼事都說得很好笑。'},
-  kim: {name: 'Kim', role: '產線作業員', tag: '廠務', color: '#c07a2a', about: '在產線上做檢查，也是領班最愛的聊天對象。'}
+  kim: {name: 'Kim', role: '產線作業員', tag: '廠務', color: '#c07a2a', about: '在產線上做檢查，也是領班最愛的聊天對象。'},
+  tom: {name: 'Tom', role: '韌體工程師', tag: 'RD', color: '#7a4fd6', about: '寫韌體，講話很慢，打字很快。座位旁邊永遠有三罐能量飲料。'},
+  anna: {name: 'Anna', role: '客服', tag: '客服', color: '#d6702b', about: '每天接最多電話的人。聲音很甜，脾氣其實很大。'},
+  ken: {name: 'Ken', role: '業務助理', tag: '業務', color: '#d6502b', about: '幫業務跑單、對帳、訂便當。全公司最早知道誰要請客。'},
+  lily: {name: 'Lily', role: '採購助理', tag: '採購', color: '#8a6a2a', about: '下單、催貨、對發票。一邊做事一邊聽八卦，兩樣都不漏。'},
+  bo: {name: 'Bo', role: '測試工程師', tag: 'QA', color: '#5a7fa0', about: '專門把東西弄壞的人。看到按鈕就想按。'},
+  vera: {name: 'Vera', role: '法務', tag: '法務', color: '#6b4f9a', about: '合約一頁一頁看。不太說話，但說的每一句都有人記在本子上。'},
+  fu: {name: 'Mr. Fu', role: '大福便當老闆', tag: '餐廳街', color: '#c24420', about: '站在蒸飯櫃後面的人。記得每一個常客愛吃什麼。'},
+  zhang: {name: 'Mr. Zhang', role: '老張水餃老闆', tag: '餐廳街', color: '#2457b8', about: '水餃都是現包的。包的時候不講話，講話的時候不包。'},
+  yi: {name: 'Auntie Lin', role: '家常自助餐阿姨', tag: '餐廳街', color: '#2f7a3a', about: '夾菜很大方，秤重的時候眼睛很準。'},
+  kc: {name: 'Cashier', role: '全時超商店員', tag: '餐廳街', color: '#1a8274', about: '一個人顧整間店。你買什麼，他都問要不要加熱。'}
 };
 WORLD.cast = {
   me: {label: '你・PM', fill: '#f2b01e', ink: '#231800', cloth: 0x3b4a5a, color: 0xc98a00, hair: 0x2b2320, node: 'start', face: Math.PI / 2},
@@ -72,6 +82,16 @@ WORLD.cast = {
   dan: {label: '插車・Dan', fill: '#c07a2a', ink: '#ffffff', cloth: 0x3b6fb5, color: 0xc07a2a, hair: 0x1c1c1c, node: 'wh1', face: 0, rig: 'forklift', speed: 3.2, rigColor: 0x3b8fd6},
   ray: {label: '領班・Ray', fill: '#c07a2a', ink: '#ffffff', cloth: 0xe8892f, color: 0xc07a2a, hair: 0x2a2420, node: 'chw1', face: 1.6},
   kim: {label: '作業員・Kim', fill: '#c07a2a', ink: '#ffffff', cloth: 0x3b6fb5, color: 0xc07a2a, hair: 0x3b2a22, node: 'chw2', face: -1.5, long: true},
+  tom: {label: 'Tom・韌體', fill: '#7a4fd6', ink: '#ffffff', cloth: 0x4b3a7f, color: 0x7a4fd6, hair: 0x23201c, node: 'a1c', face: 0, hidden: true},
+  anna: {label: 'Anna・客服', fill: '#d6702b', ink: '#ffffff', cloth: 0x8a4a2a, color: 0xd6702b, hair: 0x3b2a22, long: true, node: 'a1c', face: 0, hidden: true},
+  ken: {label: 'Ken・業務助理', fill: '#d6502b', ink: '#ffffff', cloth: 0x2f5a6a, color: 0xd6502b, hair: 0x3a2a1c, node: 'a1c', face: 0, hidden: true},
+  lily: {label: 'Lily・採購助理', fill: '#8a6a2a', ink: '#ffffff', cloth: 0x5a4a2a, color: 0x8a6a2a, hair: 0x2a2420, long: true, node: 'a1c', face: 0, hidden: true},
+  bo: {label: 'Bo・QA', fill: '#5a7fa0', ink: '#ffffff', cloth: 0x3a5a7a, color: 0x5a7fa0, hair: 0x1c1c1c, node: 'a1c', face: 0, hidden: true},
+  vera: {label: 'Vera・法務', fill: '#6b4f9a', ink: '#ffffff', cloth: 0x3a2f55, color: 0x6b4f9a, hair: 0x2a2a2e, long: true, node: 'a1c', face: 0, hidden: true},
+  fu: {label: 'Mr. Fu・便當', fill: '#c24420', ink: '#ffffff', cloth: 0xf2f0e8, color: 0xc24420, hair: 0x2a2420, node: 'a1c', face: 0, hidden: true},
+  zhang: {label: 'Mr. Zhang・水餃', fill: '#2457b8', ink: '#ffffff', cloth: 0xf2f0e8, color: 0x2457b8, hair: 0x8f8f8f, node: 'a1c', face: 0, hidden: true},
+  yi: {label: 'Auntie Lin・自助餐', fill: '#2f7a3a', ink: '#ffffff', cloth: 0xe8f0e8, color: 0x2f7a3a, hair: 0x3b2a22, long: true, node: 'a1c', face: 0, hidden: true},
+  kc: {label: '店員・超商', fill: '#1a8274', ink: '#ffffff', cloth: 0x2a8a7a, color: 0x1a8274, hair: 0x1c1c1c, node: 'a1c', face: 0, hidden: true},
   tina: {label: 'Tina・HR', fill: '#3d8f7a', ink: '#ffffff', cloth: 0x2f6f5f, color: 0x3d8f7a, hair: 0x2a2020, long: true, node: 'mt1', face: 0, hidden: true},
   victor: {label: 'Victor・SI', fill: '#8d4a6b', ink: '#ffffff', cloth: 0x5b3a4b, color: 0x8d4a6b, hair: 0x1f1a17, node: 'mt1', face: 0, hidden: true}
 };

@@ -3,6 +3,8 @@
    可以摸魚的地方：洗手間、茶水間、辦公室裡到處聊天、倉庫（滑手機）、午休拖太久。
    摸魚到一個程度，KP 會來巡查，問你上面小事的進度：答得出來就放過，答不出來就被罵；被罵三次就被開除。
    午休可以到餐廳街（四家店，每一家都可以走進去看菜單），看你怎麼把公司餐補（一餐 NT$130）用得最划算。
+   辦公室裡坐滿了人（座位同事都可以聊天），KP 會在辦公室裡到處走，遇到你就停下來問一件事；午休時一半的人去餐廳街吃飯，KP 也坐在那裡。
+   餐廳街有排隊被插隊、隔壁桌八卦的小插曲。高層區（副總、總裁）在主辦公室正下方。
    結算畫面跟別章不同：今天賺了多少、偷了多少、餐補用得怎麼樣，也用月薪換算成錢。
    ST.d 記：sal（月薪）、sl（摸魚分鐘）、tl／cl／wl／ll（洗手間／聊天／倉庫滑手機／午休超時）、insp（巡查次數）、ok5（答出來幾次）、sc（被罵幾次）、
    t1／t2／t3（三件小事的結果）、eat（午餐）、lm（午休用掉的分鐘）、sfire（被開除）。 公司、人名、店名都是虛構的。 */
@@ -13,10 +15,19 @@ const pm5Ch = b => {const w = b.when; b.when = () => ST.d.chapter === 5 && !ST.d
 const pm5N = n => 'NT$ ' + Math.round(n).toLocaleString('en-US');
 const pm5Min = () => (ST.d.sal || 60000) / 22 / 480;   /* 每分鐘薪水 */
 
-STORY.segs.w5a = {name: '薪水小偷', sub: '週三早上。又是上班的一天。', t: 525, mood: 'day', scene() {pmCast({})}};
-STORY.segs.w5b = {name: '午休', sub: '十二點。公司餐補一餐 NT$130。', t: 720, mood: 'day', scene() {pmCast({})}};
-STORY.segs.w5c = {name: '下午', sub: '午休之後，最容易想睡。', get t() {return Math.max(810, ST.clock)}, mood: 'day', scene() {pmCast({})}};
-STORY.segs.w5d = {name: '下班前', sub: '五點半，KP 還在。', get t() {return Math.max(1020, ST.clock)}, mood: 'eve', scene() {pmCast({})}};
+/* 辦公室裡坐著的人（座位點見 office.js）。午休：一半的人去餐廳街吃飯，KP 也坐在那裡 */
+const PM5_DESK = {kai: 'kaiD', hank: 'hkD', lena: 'mk2', zoe: 'mk1', ian: 'id1', leo: 'leoD', tom: 's2', anna: 's1', ken: 's3', lily: 's4', bo: 's5', vera: 's6'};
+const PM5_BOSS = {nora: ['vp', 0], walter: ['ceo', 0], fu: 'o1', zhang: 'o2', yi: 'o3', kc: 'o4'};
+const PM5_LUNCH = {tom: ['u1', Math.PI], anna: ['u2', Math.PI], lena: ['u3', Math.PI], bo: ['u4', Math.PI], ken: ['d1', 0], kp: ['d2', 0], lily: ['d3', 0], vera: ['d4', 0]};   /* 上排的桌子坐在南邊、面向北；下排坐在北邊、面向鏡頭 */
+function pm5Cast(lunch) {
+  const o = Object.assign({}, PM5_DESK, PM5_BOSS);
+  if (lunch) Object.keys(PM5_LUNCH).forEach(id => {o[id] = PM5_LUNCH[id]});
+  pmCast(o);
+}
+STORY.segs.w5a = {name: '薪水小偷', sub: '週三早上。又是上班的一天。', t: 525, mood: 'day', scene() {pm5Cast(false)}};
+STORY.segs.w5b = {name: '午休', sub: '十二點。公司餐補一餐 NT$130。', t: 720, mood: 'day', scene() {pm5Cast(true)}};
+STORY.segs.w5c = {name: '下午', sub: '午休之後，最容易想睡。', get t() {return Math.max(810, ST.clock)}, mood: 'day', scene() {pm5Cast(false)}};
+STORY.segs.w5d = {name: '下班前', sub: '五點半，KP 還在。', get t() {return Math.max(1020, ST.clock)}, mood: 'eve', scene() {pm5Cast(false)}};
 
 /* ───────── 摸魚：加上分鐘、時鐘往前，然後看 KP 會不會來 ───────── */
 const PM5_LABEL = {tl: '洗手間', cl: '聊天', wl: '倉庫', ll: '午休超時'};
@@ -28,27 +39,64 @@ function pm5Add(k, m) {
 function pm5Qs() {
   const d = ST.d;
   return [
-    {k: 't1', q: 'QX-7 現在的成本，系統上是多少？', ok: d.t1 === 'ok', right: 'USD ' + PM5_COST, mine: d.t1 === 'bad' ? 'USD ' + d.c5 : null, wrong: ['大概四百多吧', 'USD 450 左右，我再確認一下']},
-    {k: 't2', q: 'QX-7 的售價，你維護成多少了？毛利率目標是 25%。', ok: d.t2 === 'ok', right: 'USD 557（成本 ÷ 0.75）', mine: d.t2 === 'bad' ? 'USD 523' : null, wrong: ['我還在算……', '照上次的價格，沒有動']},
-    {k: 't3', q: '倉庫的庫存，你數過了嗎？實際有幾台？', ok: d.t3 === 'ok', right: '96 台，系統上少了 4 台，我已經通報了', mine: null, wrong: ['系統上寫一百台', '我剛從倉庫回來，應該沒問題']}];
+    {k: 't1', done: d.t1 !== undefined, q: 'QX-7 現在的成本，系統上是多少？', ok: d.t1 === 'ok', right: 'USD ' + PM5_COST, mine: d.t1 === 'bad' ? 'USD ' + d.c5 : null, wrong: ['大概四百多吧', 'USD 450 左右，我再確認一下']},
+    {k: 't2', done: d.t2 !== undefined, q: 'QX-7 的售價，你維護成多少了？毛利率目標是 25%。', ok: d.t2 === 'ok', right: 'USD 557（成本 ÷ 0.75）', mine: d.t2 === 'bad' ? 'USD 523' : null, wrong: ['我還在算……', '照上次的價格，沒有動']},
+    {k: 't3', done: d.t3 !== undefined, q: '倉庫的庫存，你數過了嗎？實際有幾台？', ok: d.t3 === 'ok', right: '96 台，系統上少了 4 台，我已經通報了', mine: null, wrong: ['系統上寫一百台', '我剛從倉庫回來，應該沒問題']}];
+}
+function pm5Ask(next, q, intro) {
+  const d = ST.d;
+  d.metT = Date.now();
+  const L = intro.concat([['kp', q.q]]);
+  if (!q.done) {   /* 這件事還沒做：老實說就放過，吹牛就被罵 */
+    const pend = {t1: '成本', t2: '售價', t3: '庫存'}[q.k];
+    say(L, null, {choice: [
+      ['還沒，我現在就去做', () => say([['kp', '好。老實講，比假裝做完好。快去。']], () => pm5Back(next), {end: '馬上去'})],
+      ['做好了，我正在最後確認一下' + pend, () => pm5Fail(next, q)]]});
+    return;
+  }
+  const right = q.ok ? [[q.right, () => {d.ok5 = (d.ok5 || 0) + 1; d.nx = (d.sl || 0) + 45; pm5Pass(next)}]] : [];
+  const mine = !q.ok && q.mine ? [[q.mine, () => pm5Fail(next, q, true)]] : [];
+  const wrong = q.wrong.map(w => [w, () => pm5Fail(next, q)]);
+  say(L, null, {choice: right.concat(mine, wrong)});
 }
 function pm5Check(next) {
   const d = ST.d, thr = d.nx == null ? 30 : d.nx;
   if ((d.sl || 0) < thr || (d.insp || 0) >= 4 || d.sfire) {next(); return}
   d.insp = (d.insp || 0) + 1;
   const Q = pm5Qs(), q = Q[(d.insp - 1) % Q.length], me = W && W.snap().me;
-  const ask = () => {
-    const L = [['sys', '你一抬頭，KP 不知道什麼時候已經站在你旁邊。'], ['kp', '（看了看四周）你這陣子，好像一直不在位子上。'], ['kp', q.q]];
-    const right = q.ok ? [[q.right, () => {d.ok5 = (d.ok5 || 0) + 1; d.nx = d.sl + 45; pm5Pass(next)}]] : [];
-    const mine = !q.ok && q.mine ? [[q.mine, () => pm5Fail(next, q, true)]] : [];
-    const wrong = q.wrong.map(w => [w, () => pm5Fail(next, q)]);
-    say(L, null, {choice: right.concat(mine, wrong)});
-  };
+  const ask = () => pm5Ask(next, q, [['sys', '你一抬頭，KP 不知道什麼時候已經站在你旁邊。'], ['kp', '（看了看四周）你這陣子，好像一直不在位子上。']]);
   say([['sys', '背後傳來腳步聲，越來越近。']], () => {
     if (W) W.walkXZ('kp', me[0] + 1.3, me[1] + .2, ask); else ask();
   });
 }
-function pm5Back(fn) {if (W) W.walk('kp', 'kp'); fn()}
+/* KP 在辦公室裡到處走：路上遇到你，就停下來問一件事（每隔一陣子最多一次） */
+const PM5_PATROL = ['a2c', 'a2m', 'fm', 'a1m', 'fl', 'a2l', 'a1r', 'fr', 'fc', 'a2r', 'kpdoor', 'a1l'];
+function pm5Meet() {
+  const d = ST.d; d.met = (d.met || 0) + 1; busy = true; showGuide();
+  const Q = pm5Qs(), q = Q[(d.qi = (d.qi || 0) + 1) % Q.length], p = W.snap().kp;
+  W.walkXZ('kp', p[0], p[1]);
+  if (W.face) W.face('kp', 'me');
+  pm5Ask(pmxFree, q, [['sys', ST.seg === 'w5b' ? 'KP 坐在窗邊，抬頭看見你。' : 'KP 迎面走過來，在你面前停下。'], ['kp', ST.seg === 'w5b' ? '午休還在想工作的事嗎？剛好。' : '剛好遇到你。']]);
+}
+function pm5Patrol(now) {
+  const d = ST.d;
+  if (!W || !ST.on || d.chapter !== 5 || d.sfire || busy || !W.has('kp')) return;
+  const seg = ST.seg;
+  if (seg !== 'w5a' && seg !== 'w5b' && seg !== 'w5c') return;
+  const P = pm5P || (pm5P = {i: 0, wait: 0});
+  if (seg !== 'w5b' && !W.moving('kp') && now > P.wait) {
+    const n = PM5_PATROL[(P.i += 1 + Math.floor(Math.random() * 3)) % PM5_PATROL.length];
+    W.walk('kp', n); P.wait = now + 800 + Math.random() * 2500;
+  }
+  const s = W.snap();
+  if (!s.kp || !s.me || Math.hypot(s.kp[0] - s.me[0], s.kp[1] - s.me[1]) > 2.0) return;
+  if (now - (d.metT || 0) < 45000 || (d.met || 0) >= 6) return;
+  if (!d.t0) {d.t0 = now; return}
+  if (now - d.t0 < 15000) return;
+  pm5Meet();
+}
+let pm5P = null;
+function pm5Back(fn) {fn()}
 function pm5Pass(next) {
   say([['kp', '（點了點頭）嗯。可以。'], ['kp', '你要是每次都這樣，我就不用站在這裡了。']], () => pm5Back(next), {end: '謝謝主管'});
 }
@@ -104,7 +152,16 @@ const PM5_CHAT = {
   mia: ['（端著杯子）財務部最大的福利，就是離老闆很遠。', '我午休都在看股票，不要跟別人說。'],
   jay: ['你知道供應商送的月餅最後都去哪了嗎？都進我肚子了。', '殺價是一種藝術，摸魚也是。'],
   sam: ['（把螢幕轉過來）你要看我最近在玩的遊戲嗎？', '我的網路隨時都可以斷。你說，我是不是很有權力？'],
-  ella: ['我們品保最大的特權，是可以假裝在檢查。', '我昨天午休睡了兩個小時，沒有人發現。']};
+  ella: ['我們品保最大的特權，是可以假裝在檢查。', '我昨天午休睡了兩個小時，沒有人發現。'],
+  tom: ['（頭也不抬）我的程式在 build，還有二十分鐘。這二十分鐘，我可以跟你聊天。', '你有沒有發現，Anna 每次講電話都會變成另一個人？', '我昨天看到 Ethan 跟 Vera 在茶水間講悄悄話。我什麼都沒看到。'],
+  anna: ['（摀住話筒）等一下，客戶在罵我，我讓他罵三分鐘。你說，你說。', '我跟你說，Ken 每次幫我訂便當都會多訂一份，然後說「剩的」。你覺得呢？', '昨天 Bo 跟 Vera 在會議室吵架，整層都聽到，只有他們兩個不知道。'],
+  ken: ['你們有人要訂飲料嗎？我先問，我不一定會請。', '我偷偷跟你講，Lily 上週五有穿裙子。你別說是我說的。', '我們這層樓最大的祕密是什麼？是我知道每個人的便當口味。'],
+  lily: ['我跟你說，那個供應商昨天寄了一個「恭喜發財」的月曆，現在才十一月。', '（小聲）Ken 最近一直找我吃飯，你覺得他是不是對我有意思？', '我桌上有三種堅果，你要哪一種？'],
+  bo: ['我上午把測試機弄壞了兩台。Tom 說這是我的專長。', '你不要點那個紅色按鈕。我是說，你可以點，我不會看。', '我跟 Vera 吵架不是因為工作，是因為她把我的馬克杯放到了「資源回收」。'],
+  vera: ['（翻著合約，沒抬頭）我有在聽。你說。', '我其實不喜歡開會。但沒有人問我喜不喜歡。', '你知道為什麼合約都那麼長嗎？因為每個人都想多加一句。'],
+  nora: ['（看了你一眼，把螢幕轉開）這個時間，你不在位子上，應該有很好的理由。', '我桌上這盆植物是 Walter 送的，說要「為公司帶來運氣」。三個月了，它比我們都健康。'],
+  walter: ['（放下茶杯）你是……產品部的？我記得你的名字，下次再告訴你。', '這間辦公室，是整層樓最安靜的地方。也是最容易讓人想睡的地方。']};
+const PM5_OWN = {fu: 'shop_bento', zhang: 'shop_dumpling', yi: 'shop_buffet', kc: 'shop_mart'};
 function pm5Talk(id) {
   const L = PM5_CHAT[id];
   if (!L || ST.d.chapter !== 5 || busy || !ST.on) return false;
@@ -130,7 +187,11 @@ function pm5Shop(id) {
     if (d.eat) {say([['sys', '你已經吃過午餐了。']], pmxFree); return}
     if (first) d.lm = (d.lm || 0) + 5;
     const ch = S.items.map(it => [it[0] + '　NT$' + it[1], () => pm5Eat(id, it)]).concat([['再去看看別家', pmxFree]]);
-    say([['sys', '你走進' + S.n + '。'], ['sys', S.says], ['sys', '公司餐補：一餐 NT$' + PM5_SUB + '。超過的部分，自己付；沒用完，不會退。']], null, {choice: ch});
+    const open = () => say([['sys', '你走進' + S.n + '。'], ['sys', S.says], ['sys', '公司餐補：一餐 NT$' + PM5_SUB + '。超過的部分，自己付；沒用完，不會退。']], null, {choice: ch});
+    const n = Object.keys(d.seen).length;
+    if (first && n === 1) pm5EvQueue(open);
+    else if (first && n === 2) pm5EvGossip(open);
+    else open();
   });
 }
 function pm5Eat(id, it) {
@@ -144,6 +205,20 @@ function pm5Eat(id, it) {
     if (over > 0) {pm5Add('ll', over)}
     pm5Check(() => {busy = true; pm5Release()});
   }, {end: '吃飽了，回去'});
+}
+/* 餐廳街的小插曲：排隊被插隊、隔壁桌的八卦 */
+function pm5EvQueue(open) {
+  const d = ST.d;
+  say([['sys', '你剛排到櫃台前，一個人從旁邊擠到你前面。'], ['sys', '「老闆，一個排骨便當，快一點，我趕時間！」他連頭都沒回。']], null, {choice: [
+    ['「不好意思，後面還有人在排隊。」', () => say([['sys', '那個人愣了一下，不好意思地退到後面。'], ['sys', '老闆朝你眨眨眼，偷偷在你的餐盒多放了一顆滷蛋。']], open, {end: '謝謝'})],
+    ['算了，反正不急', () => {d.lm = (d.lm || 0) + 5; say([['sys', '你默默站到後面。多等了五分鐘，肚子叫了兩次。']], open, {end: '嗯'})}]]});
+}
+function pm5EvGossip(open) {
+  const d = ST.d;
+  say([['anna', '欸欸，過來坐！我跟你說一件事。'], ['lena', '（壓低聲音）Ken 跟 Lily 每天都剛好同一個時間去倒水，你不覺得很奇怪嗎？'],
+    ['anna', '還有，昨天 Bo 跟 Vera 在會議室吵到整層都聽到。聽說是因為一個馬克杯。'], ['sys', '你往旁邊一看，Ken 和 Lily 就坐在不遠的那一桌。他們正好同時抬起頭。']], null, {choice: [
+    ['坐下來多聽一點', () => {d.lm = (d.lm || 0) + 10; say([['sys', '你聽了十分鐘。這十分鐘裡，沒有一件事跟 QX-7 有關。']], open, {end: '好像該去買飯了'})}],
+    ['笑一笑，說我先去買飯', open]]});
 }
 let pm5Hub = null;   /* 午休那一件事的 done：吃完午餐才呼叫 */
 function pm5Release() {if (pm5Hub && ST.d.eat) {const f = pm5Hub; pm5Hub = null; busy = true; f()} else pmxFree()}

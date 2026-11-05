@@ -377,7 +377,7 @@ function initWorld(){
     show(id,on){if(chars[id])chars[id].g.visible=!!on},
     moving(id){const c=chars[id];return !!(c&&c.path.length)},
     carry(id,on){const c=chars[id];if(c&&c.load)c.load.visible=!!on},
-    put(id,node){const ch=chars[id],p=NODES[node];if(!ch||!p)return;ch.path=[];ch.cb=null;ch.node=node;ch.home=node;ch.g.position.set(p[0],0,p[1])},
+    put(id,node,f){const ch=chars[id],p=NODES[node];if(!ch||!p)return;ch.path=[];ch.cb=null;ch.node=node;ch.home=node;ch.g.position.set(p[0],0,p[1]);if(f!=null){ch.face=f;ch.g.rotation.y=f;ch.target=f}},
     screen(id,lines,color){const s=screens[id];if(!s)return;s.st.lines=lines;if(color)s.st.color=color;s.redraw()},
     focus(at,dist){focus=at?{pos:new T.Vector3(at[0],at[1],at[2]),dist:dist||11}:null},
     focusObj(obj,dist){focus={obj,pos:obj.position.clone(),dist:dist||14}},

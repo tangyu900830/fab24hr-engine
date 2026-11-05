@@ -178,6 +178,7 @@ const PM5_PLACE = ['wc', 'shop_bento', 'shop_dumpling', 'shop_buffet', 'shop_mar
 STORY.talk = id => {
   if (id === 'wc') {if (ST.d.chapter === 5) return pm5Wc(); return pmxVisit('wc', () => {busy = true; showGuide(); say([['sys', '你洗了手，回座位。']], pmxFree, {end: '好'})})}
   if (PM5_SHOP[id]) return pm5Shop(id);
+  if (PM5_OWN[id]) return pm5Shop(PM5_OWN[id]);
   if (ST.d.chapter === 5 && id === 'warehouse' && !busy) return pm5Wh();
   if (ST.d.chapter === 5 && pm5Talk(id)) return true;
   if (id === 'pantry' || PMX_KIT[id] || (id === pmxKV.id && pmxPantryOpen())) return pmxPantry();
@@ -379,5 +380,5 @@ function pmxCrew(now) {
 setInterval(() => {
   if (!W) return;
   const now = Date.now();
-  try {pmxCrew(now); pmxVisitors(now)} catch (e) {}
+  try {pmxCrew(now); pmxVisitors(now); pm5Patrol(now)} catch (e) {}
 }, 400);
