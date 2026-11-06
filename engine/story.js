@@ -71,6 +71,7 @@ function enterSeg(seg,cb,noCard){
 }
 function beginBeat(){
   const b=curBeat();if(!b)return;
+  if(STORY.onBeat&&STORY.onBeat(b))return;   /* 遊戲可以在每一件事開始前插一段（它會自己再呼叫 beginBeat）*/
   if(b.t!=null&&b.t>ST.clock){ST.clock=b.t;hud()}
   if(b.ring&&ST.rung!==ST.q){busy=true;showGuide();const R=typeof b.ring==='function'?b.ring():b.ring;
     ring(R[0],R[1],R[2],()=>{ST.rung=ST.q;if(b.to){busy=false;showGuide();if(W&&R[2]!==ANSWER)goTo(b.to)}else runBeat(b)});return}   /* 訊息叫你去找誰：按掉就直接走過去 */

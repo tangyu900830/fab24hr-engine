@@ -581,7 +581,8 @@ STORY.beats.forEach(b => {const w = b.when; b.when = () => ST.d.chapter !== 2 &&
 STORY.beats.unshift({seg: 'menu', when: () => !ST.d.chapter,
   lines: () => [['sys', '棲光科技的早上。你的桌上有' + PMNUM[PMCH.length] + '件事在等你。']],
   mini(done) {
-    say([['sys', '先處理哪一件？']], null, {fixed: true, choice: PMCH.map(c => [c.t, () => {ST.d.chapter = c.id; done()}])});
+    const menu = () => say([['sys', '先處理哪一件？']], null, {fixed: true, choice: PMCH.map(c => [c.t, () => {ST.d.chapter = c.id; done()}]).concat(STORY.menuExtra ? STORY.menuExtra(menu) : [])});
+    menu();
   }});
 
 /* 導師 Maggie 的對話：得罪她之後，全部換成冷淡的一句（餅乾也不會有） */

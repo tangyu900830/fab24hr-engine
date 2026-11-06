@@ -95,7 +95,10 @@ function pm5Patrol(now) {
   }
   const s = W.snap();
   if (!s.kp || !s.me || Math.hypot(s.kp[0] - s.me[0], s.kp[1] - s.me[1]) > 2.0) return;
-  if (now - (d.metT || 0) < 45000 || (d.met || 0) >= 9) return;
+  const pr = d.pr || {};
+  if (pr.sign ? Math.hypot(s.kp[0] - s.me[0], s.kp[1] - s.me[1]) > 1.4 : false) return;
+  if (now - (d.metT || 0) < (pr.sign ? 90000 : 45000) || (d.met || 0) >= 9) return;
+  if (pr.ear && Math.random() < .5) {d.metT = now; return}
   if (!d.t0) {d.t0 = now; return}
   if (now - d.t0 < 15000) return;
   pm5Meet();
@@ -106,7 +109,8 @@ function pm5Pass(next) {
   say([['kp', '（點了點頭）嗯。可以。'], ['kp', '你要是每次都這樣，我就不用站在這裡了。']], () => pm5Back(next), {end: '謝謝主管'});
 }
 function pm5Fail(next, q, wrongNum, why) {
-  const d = ST.d; d.sc = (d.sc || 0) + 1; d.nx = (d.sl || 0) + 25; (d.bad = d.bad || []).push(why || '上班時間一再摸魚，被主管問起「' + q.q.slice(0, -1) + '」卻答不出來');
+  const d = ST.d;
+  if ((d.pr && d.pr.folder && !d.fUsed) || d.shield) {if (d.shield) d.shield = 0; else d.fUsed = 1; d.nx = (d.sl || 0) + 25; say([['sys', '你從桌上抽出那疊資料夾，翻開，擋在自己面前。'], ['kp', '……你在忙。那我晚點再來。'], ['sys', '（資料夾幫你擋掉了這一次）']], () => pm5Back(next), {end: '呼……'}); return} d.sc = (d.sc || 0) + 1; d.nx = (d.sl || 0) + 25; (d.bad = d.bad || []).push(why || '上班時間一再摸魚，被主管問起「' + q.q.slice(0, -1) + '」卻答不出來');
   const L = [['kp', wrongNum ? '你記錯了。這種數字，你自己應該最清楚。' : why ? '上次你也說還沒做。現在還是還沒做？' : '答不出來？你這一個早上，到底在做什麼？'],
     ['kp', d.sc >= 3 ? '這已經是第三次了。你跟我來一下。' : d.sc === 2 ? '這是第二次。再有一次，我們就不用談了。' : '我今天先當作沒看到。下次，我要看到進度。']];
   say(L, () => {
@@ -171,7 +175,7 @@ function pm5Talk(id) {
   const L = PM5_CHAT[id];
   if (!L || ST.d.chapter !== 5 || busy || !ST.on) return false;
   busy = true; showGuide(); ST.d.cn = (ST.d.cn || 0) + 1;
-  say([[id, L[ST.d.cn % L.length]], ['sys', '你們就這樣聊了十分鐘。']], () => {pm5Add('cl', 10); pm5Check(pmxFree)}, {end: '聊完了'});
+  say([[id, (typeof pmzArcLine === 'function' && pmzArcLine(id)) || L[ST.d.cn % L.length]], ['sys', '你們就這樣聊了十分鐘。']], () => {pm5Add('cl', 10); pm5Check(pmxFree)}, {end: '聊完了'});
   return true;
 }
 
@@ -197,13 +201,14 @@ function pm5Shop(id) {
   return pmxVisit(id, () => {
     busy = true; showGuide();
     const d = ST.d, first = !(d.seen = d.seen || {})[id]; d.seen[id] = 1;
-    if (d.eat) {say([['sys', '你已經吃過午餐了。']], pmxFree); return}
+    if (d.eat) {if (id === 'shop_mart') pm5Props(pmxFree); else say([['sys', '你已經吃過午餐了。']], pmxFree); return}
     if (first) d.lm = (d.lm || 0) + 5;
     if (ST.clock < 720 + (d.lm || 0)) {ST.clock = 720 + (d.lm || 0); if (typeof hud === 'function') hud()}
     const late = pm5Hm() >= 750;
     if (late && id !== 'shop_mart') {pm5Sold(S); return}
     const items = late ? [S.items[2]] : S.items;
     const ch = items.map(it => [it[0] + '　NT$' + it[1], () => pm5Eat(id, it)]).concat([['再去看看別家', pmxFree]]);
+    if (id === 'shop_mart') ch.splice(ch.length - 1, 0, ['逛逛雜貨架', () => pm5Props(pmxFree)]);
     const open = () => say([['sys', '你走進' + S.n + '。'], ['sys', late ? '架上只剩下最後幾樣。店員說：「十二點半了，就剩這些。」' : S.says], ['sys', '公司餐補：一餐 NT$' + PM5_SUB + '。超過的部分，自己付；沒用完，不會退。']], null, {choice: ch});
     const n = Object.keys(d.seen).length;
     if (first && n === 1) pm5EvQueue(open);
@@ -318,16 +323,33 @@ STORY.beats.push.apply(STORY.beats, [
 
 STORY.places.foodc = {name: '餐廳街', at: [-18.8, 3.4], mark: [-18.8, 2.8, 3.4], go: '去餐廳街'};
 
+/* 全時超商的雜貨架：摸魚道具。花的錢會從「今天實際賺到」裡扣掉 */
+const PM5_PROPS = [
+  ['ear', '單邊藍牙耳機', 90, '戴著耳機的人，看起來像在開會。主管有一半的機會不會打擾你。'],
+  ['folder', '厚厚的資料夾', 35, '桌上放一疊資料，被問倒的時候可以抽一份出來擋一次。'],
+  ['sign', '「請勿打擾」立牌', 50, '立在桌上。主管要靠更近才會開口，而且隔比較久才會來。'],
+  ['coffee', '提神熱咖啡', 55, '喝下去，主管要晚一點才會想到你（只能用一次）。']];
+function pm5Props(back) {
+  const d = ST.d, pr = d.pr = d.pr || {};
+  const ch = PM5_PROPS.filter(p => p[0] === 'coffee' || !pr[p[0]]).map(p => [p[1] + '　NT$' + p[2], () => {
+    pr[p[0]] = 1; d.pc = (d.pc || 0) + p[2];
+    if (p[0] === 'coffee') d.nx = (d.nx == null ? 30 : d.nx) + 15;
+    toast('買了' + p[1], '−NT$' + p[2]);
+    say([['sys', p[3]]], () => pm5Props(back), {end: '好'});
+  }]).concat([['不買了', back]]);
+  say([['sys', '收銀台旁邊的雜貨架，擺滿了辦公室求生用品。'], ['sys', '今天已花在道具上：NT$' + (d.pc || 0)]], null, {choice: ch});
+}
+
 /* 第五章的結算卡 */
 STORY.ending5 = function () {
-  const d = ST.d, sl = d.sl || 0, per = pm5Min(), day = (d.sal || 60000) / 22, stolen = sl * per, earned = Math.max(0, day - stolen), eat = d.eat;
+  const d = ST.d, sl = d.sl || 0, per = pm5Min(), day = (d.sal || 60000) / 22, stolen = sl * per, earned = Math.max(0, day - stolen - (d.pc || 0)), eat = d.eat;
   const fired = !!d.fired;
   const title = fired ? '摸魚摸得太兇，被請回家' : sl < 30 ? '認真的好員工' : sl < 80 ? '偶爾放空' : sl < 150 ? '資深摸魚人' : '薪水小偷';
   const parts = [['洗手間', d.tl || 0], ['聊天', d.cl || 0], ['倉庫滑手機', d.wl || 0], ['午休超時', d.ll || 0]].filter(p => p[1]);
   const lines = [
     '你的月薪 ' + pm5N(d.sal || 60000) + '，每天 ' + pm5N(day) + '，每分鐘 NT$ ' + per.toFixed(1) + '。',
     sl ? '今天你摸魚 ' + sl + ' 分鐘（' + parts.map(p => p[0] + ' ' + p[1] + ' 分').join('、') + '），等於偷了公司 ' + pm5N(stolen) + '。' : '今天你一分鐘都沒有摸魚，一毛錢也沒偷。',
-    '實際工作時間換算，你今天真正賺到 ' + pm5N(earned) + '。',
+    '實際工作時間換算，你今天真正賺到 ' + pm5N(earned) + (d.pc ? '（已扣掉買摸魚道具的 ' + pm5N(d.pc) + '）' : '') + '。',
     eat ? '午餐在「' + eat.shop + '」吃「' + eat.item + '」，花 NT$' + eat.total + '：餐補用掉 NT$' + eat.used + '／' + PM5_SUB + (eat.self ? '，自己多付 NT$' + eat.self : '') + (eat.waste ? '，浪費了 NT$' + eat.waste : '') + (eat.self === 0 && eat.waste === 0 && eat.full >= 2 ? '。用得剛剛好，吃得又飽。' : '。')
       : '你今天沒有去吃公司餐補，白白放棄了 NT$' + PM5_SUB + '。',
     '主管來巡查 ' + (d.insp || 0) + ' 次，你答出來 ' + (d.ok5 || 0) + ' 次，被罵 ' + (d.sc || 0) + ' 次。',

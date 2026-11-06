@@ -42,7 +42,7 @@ async function play(br, o) {
   const vis = s => pg.evaluate(s => { const e = document.querySelector(s); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden' }, s);
   const click = async s => { try { await pg.click(s, { timeout: 5000 }); return true } catch (e) { log.push('miss:' + s); return false } };
   while (steps++ < 700) {
-    if (o.preset && !o.presetDone && await pg.evaluate(() => !!window.__t.ST().d.chapter)) { o.presetDone = true; await pg.evaluate(p => Object.assign(window.__t.ST().d, p), o.preset) }   /* 先把信任壓到很低：測資遣 */
+    if (o.preset && !o.presetDone && await pg.evaluate(() => !!window.__t.ST().on)) { o.presetDone = true; await pg.evaluate(p => Object.assign(window.__t.ST().d, p), o.preset) }   /* 先把信任壓到很低：測資遣 */
     if (await vis('#end')) {
       if (o.chain > 0 && await vis('#endNext .btn')) { o.chain--; log.push('NEXT'); await pg.waitForTimeout(500); await pg.click('#endNext .btn'); await pg.waitForTimeout(400); continue }
       ended = true; break }
