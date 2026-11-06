@@ -51,7 +51,11 @@ function pm5Ask(next, q, intro) {
   if (!q.done) {   /* 這件事還沒做：老實說就放過，吹牛就被罵 */
     const pend = {t1: '成本', t2: '售價', t3: '庫存'}[q.k];
     say(L, null, {choice: [
-      ['還沒，我現在就去做', () => say([['kp', '好。老實講，比假裝做完好。快去。']], () => pm5Back(next), {end: '馬上去'})],
+      ['還沒，我現在就去做', () => {
+        d.pend = (d.pend || 0) + 1;
+        if (d.pend === 1) say([['kp', '好。老實講，比假裝做完好。快去。']], () => pm5Back(next), {end: '馬上去'});
+        else pm5Fail(next, q, false, '一再被問起進度都說「還沒做」，人卻一直在摸魚');   /* 第二次以後，老實也沒用了 */
+      }],
       ['做好了，我正在最後確認一下' + pend, () => pm5Fail(next, q)]]});
     return;
   }
@@ -91,7 +95,7 @@ function pm5Patrol(now) {
   }
   const s = W.snap();
   if (!s.kp || !s.me || Math.hypot(s.kp[0] - s.me[0], s.kp[1] - s.me[1]) > 2.0) return;
-  if (now - (d.metT || 0) < 45000 || (d.met || 0) >= 6) return;
+  if (now - (d.metT || 0) < 45000 || (d.met || 0) >= 9) return;
   if (!d.t0) {d.t0 = now; return}
   if (now - d.t0 < 15000) return;
   pm5Meet();
@@ -101,9 +105,9 @@ function pm5Back(fn) {fn()}
 function pm5Pass(next) {
   say([['kp', '（點了點頭）嗯。可以。'], ['kp', '你要是每次都這樣，我就不用站在這裡了。']], () => pm5Back(next), {end: '謝謝主管'});
 }
-function pm5Fail(next, q, wrongNum) {
-  const d = ST.d; d.sc = (d.sc || 0) + 1; d.nx = d.sl + 25; (d.bad = d.bad || []).push('上班時間一再摸魚，被主管問起「' + q.q.slice(0, -1) + '」卻答不出來');
-  const L = [['kp', wrongNum ? '你記錯了。這種數字，你自己應該最清楚。' : '答不出來？你這一個早上，到底在做什麼？'],
+function pm5Fail(next, q, wrongNum, why) {
+  const d = ST.d; d.sc = (d.sc || 0) + 1; d.nx = (d.sl || 0) + 25; (d.bad = d.bad || []).push(why || '上班時間一再摸魚，被主管問起「' + q.q.slice(0, -1) + '」卻答不出來');
+  const L = [['kp', wrongNum ? '你記錯了。這種數字，你自己應該最清楚。' : why ? '上次你也說還沒做。現在還是還沒做？' : '答不出來？你這一個早上，到底在做什麼？'],
     ['kp', d.sc >= 3 ? '這已經是第三次了。你跟我來一下。' : d.sc === 2 ? '這是第二次。再有一次，我們就不用談了。' : '我今天先當作沒看到。下次，我要看到進度。']];
   say(L, () => {
     if (d.sc >= 3) {
